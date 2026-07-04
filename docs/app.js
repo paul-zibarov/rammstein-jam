@@ -20,6 +20,10 @@ const els = {
   pairwiseList: document.getElementById("pairwise-list"),
   rankingList: document.getElementById("ranking-list"),
   votersList: document.getElementById("voters-list"),
+  tokenStatus: document.getElementById("token-status"),
+  tokenInput: document.getElementById("github-token"),
+  saveTokenBtn: document.getElementById("save-token-btn"),
+  tokenSettings: document.getElementById("token-settings"),
 };
 
 function songKey(albumId, songName) {
@@ -259,6 +263,22 @@ async function loadResults() {
   }
 }
 
+function updateTokenUI() {
+  const saved = hasToken();
+  els.tokenStatus.textContent = saved
+    ? "✓ Токен збережено — можна голосувати"
+    : "Токен не введено — голосування недоступне";
+  els.tokenStatus.classList.toggle("ok", saved);
+  if (saved) els.tokenSettings.open = false;
+}
+
+els.saveTokenBtn.addEventListener("click", () => {
+  setToken(els.tokenInput.value);
+  els.tokenInput.value = "";
+  updateTokenUI();
+  showToast(hasToken() ? "Токен збережено" : "Токен видалено");
+});
+
 async function init() {
   document.getElementById("max-songs").textContent = MAX_SONGS;
   document.getElementById("max-songs-2").textContent = MAX_SONGS;
@@ -266,9 +286,10 @@ async function init() {
   albums = window.RAMMSTEIN_ALBUMS || [];
   renderAlbums();
   updateSelectionUI();
+  updateTokenUI();
 
-  if (!getConfig().token) {
-    showToast("Режим перегляду: для голосування налаштуйте VOTES_TOKEN (README)", true);
+  if (!hasToken()) {
+    els.tokenSettings.open = true;
   }
 }
 

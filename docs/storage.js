@@ -1,7 +1,22 @@
 const MAX_SONGS = 5;
+const TOKEN_STORAGE_KEY = "rammstein_jam_github_token";
 
 function getConfig() {
   return window.APP_CONFIG || {};
+}
+
+function getToken() {
+  return localStorage.getItem(TOKEN_STORAGE_KEY) || "";
+}
+
+function setToken(token) {
+  const value = String(token ?? "").trim();
+  if (value) localStorage.setItem(TOKEN_STORAGE_KEY, value);
+  else localStorage.removeItem(TOKEN_STORAGE_KEY);
+}
+
+function hasToken() {
+  return Boolean(getToken());
 }
 
 function apiBase() {
@@ -15,7 +30,7 @@ function rawVotesUrl() {
 }
 
 function authHeaders() {
-  const { token } = getConfig();
+  const token = getToken();
   if (!token) return {};
   return {
     Authorization: `Bearer ${token}`,
@@ -84,10 +99,10 @@ function toBase64Utf8(str) {
 }
 
 async function saveVotes(voters, sha) {
-  const { token, votesPath } = getConfig();
-  if (!token) {
+  const { votesPath } = getConfig();
+  if (!hasToken()) {
     throw new Error(
-      "Голосування ще не налаштоване. Додайте VOTES_TOKEN у GitHub Secrets (див. README)."
+      "Спочатку введіть GitHub токен у налаштуваннях зверху (потрібен для збереження голосу)."
     );
   }
 

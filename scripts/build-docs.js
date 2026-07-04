@@ -8,9 +8,7 @@ const dataDir = path.join(docs, "data");
 
 fs.mkdirSync(dataDir, { recursive: true });
 
-for (const file of ["index.html", "styles.css"]) {
-  fs.copyFileSync(path.join(publicDir, file), path.join(docs, file));
-}
+fs.copyFileSync(path.join(publicDir, "styles.css"), path.join(docs, "styles.css"));
 
 const albumsSource = fs.readFileSync(path.join(root, "data/albums.js"), "utf8");
 const albumsBrowser = albumsSource
@@ -22,13 +20,11 @@ fs.copyFileSync(path.join(root, "data/votes.json"), path.join(dataDir, "votes.js
 
 const repo = process.env.GITHUB_REPOSITORY || "paul-zibarov/rammstein-jam";
 const branch = process.env.GITHUB_REF_NAME || process.env.GITHUB_BRANCH || "main";
-const token = process.env.VOTES_TOKEN || "";
 
 const config = `window.APP_CONFIG = ${JSON.stringify(
   {
     repo,
     branch,
-    token,
     votesPath: "data/votes.json",
   },
   null,
