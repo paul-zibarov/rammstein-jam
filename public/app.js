@@ -1,6 +1,8 @@
 const selected = new Set();
 let albums = [];
 
+const IMG = 'referrerpolicy="no-referrer"';
+
 const els = {
   albums: document.getElementById("albums"),
   form: document.getElementById("vote-form"),
@@ -51,7 +53,7 @@ function renderAlbums() {
       (album) => `
     <article class="album" data-album="${album.id}">
       <header class="album-header">
-        <img class="album-cover" src="${album.cover}" alt="${album.name}" loading="lazy" width="72" height="72" />
+        <img class="album-cover" src="${album.cover}" alt="${album.name}" loading="lazy" width="72" height="72" ${IMG} />
         <div class="album-meta">
           <h3>${album.name}</h3>
           <span>${album.year}</span>
@@ -178,7 +180,7 @@ async function loadResults() {
         .map(
           (track) => `
         <div class="playlist-item">
-          <img class="playlist-cover" src="${track.albumCover}" alt="" loading="lazy" />
+          <img class="playlist-cover" src="${track.albumCover}" alt="" loading="lazy" ${IMG} />
           <div class="playlist-info">
             <p class="playlist-album">${track.albumName} <span>${track.albumYear}</span></p>
             <p class="playlist-song">${track.songName}</p>
@@ -199,7 +201,7 @@ async function loadResults() {
           (row) => `
         <tr>
           <td class="rank-cell">${row.rank}</td>
-          <td><img class="table-cover" src="${row.albumCover}" alt="" loading="lazy" /></td>
+          <td><img class="table-cover" src="${row.albumCover}" alt="" loading="lazy" ${IMG} /></td>
           <td class="song-cell">${row.songName}</td>
           <td>${row.albumName}</td>
           <td class="votes-cell">${row.voteCount}</td>
@@ -220,7 +222,7 @@ async function loadResults() {
         .map(
           (m) => `
         <div class="match-item">
-          <img class="match-cover" src="${m.albumCover}" alt="" loading="lazy" />
+          <img class="match-cover" src="${m.albumCover}" alt="" loading="lazy" ${IMG} />
           <div class="match-info">
             <p class="match-song">${m.songName} ${ytLink(m.youtubeUrl, "▶")}</p>
             <p class="match-album">${m.albumName}</p>
@@ -256,7 +258,7 @@ async function loadResults() {
               const album = albums.find((a) => a.id === s.albumId);
               const song = album?.songs.find((t) => t.key === s.key);
               return `<span class="chip">
-                ${album ? `<img src="${album.cover}" alt="" />` : ""}
+                ${album ? `<img src="${album.cover}" alt="" ${IMG} />` : ""}
                 ${s.songName}
               </span>`;
             })

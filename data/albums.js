@@ -8,7 +8,7 @@ const albums = [
     id: "herzeleid",
     name: "Herzeleid",
     year: 1995,
-    cover: "https://upload.wikimedia.org/wikipedia/en/7/7c/RammsteinHerzeleid.jpg",
+    cover: "https://upload.wikimedia.org/wikipedia/en/1/1f/Rammstein_Herzeleid_cover.jpg",
     songs: [
       "Wollt ihr das Bett in Flammen sehen?",
       "Der Meister",
@@ -27,7 +27,7 @@ const albums = [
     id: "sehnsucht",
     name: "Sehnsucht",
     year: 1997,
-    cover: "https://upload.wikimedia.org/wikipedia/en/6/60/RammsteinSehnsucht.jpg",
+    cover: "https://upload.wikimedia.org/wikipedia/en/b/b0/Rammstein_-_Sehnsucht.jpg",
     songs: [
       "Sehnsucht",
       "Engel",
@@ -46,7 +46,7 @@ const albums = [
     id: "mutter",
     name: "Mutter",
     year: 2001,
-    cover: "https://upload.wikimedia.org/wikipedia/en/4/49/RammsteinMutter.jpg",
+    cover: "https://upload.wikimedia.org/wikipedia/en/5/5e/Mutter.jpg",
     songs: [
       "Mein Herz brennt",
       "Links 2 3 4",
@@ -65,7 +65,7 @@ const albums = [
     id: "reise-reise",
     name: "Reise, Reise",
     year: 2004,
-    cover: "https://upload.wikimedia.org/wikipedia/en/8/8e/RammsteinReiseReise.jpg",
+    cover: "https://upload.wikimedia.org/wikipedia/en/a/a0/ReiseReise.jpg",
     songs: [
       "Reise, Reise",
       "Mein Teil",
@@ -82,7 +82,7 @@ const albums = [
     id: "rosenrot",
     name: "Rosenrot",
     year: 2005,
-    cover: "https://upload.wikimedia.org/wikipedia/en/9/9f/RammsteinRosenrot.jpg",
+    cover: "https://upload.wikimedia.org/wikipedia/en/4/43/Rosenrot_high-res.jpg",
     songs: [
       "Benzin",
       "Mann gegen Mann",
@@ -101,7 +101,7 @@ const albums = [
     id: "liebe",
     name: "Liebe ist für alle da",
     year: 2009,
-    cover: "https://upload.wikimedia.org/wikipedia/en/2/2e/Rammstein_Liebe_ist_f%C3%BCr_alle_da.jpg",
+    cover: "https://upload.wikimedia.org/wikipedia/en/9/98/Cover_lifad.jpg",
     songs: [
       "Rammlied",
       "Ich tu dir weh",
@@ -120,7 +120,7 @@ const albums = [
     id: "rammstein-2019",
     name: "Rammstein",
     year: 2019,
-    cover: "https://upload.wikimedia.org/wikipedia/en/4/4a/Rammstein_-_Rammstein.png",
+    cover: "https://upload.wikimedia.org/wikipedia/en/1/16/Rammstein_-_Rammstein.png",
     songs: [
       "Deutschland",
       "Radio",
@@ -139,7 +139,7 @@ const albums = [
     id: "zeit",
     name: "Zeit",
     year: 2022,
-    cover: "https://upload.wikimedia.org/wikipedia/en/8/8b/Rammstein_-_Zeit.png",
+    cover: "https://upload.wikimedia.org/wikipedia/en/a/ab/Rammstein_-_Zeit.png",
     songs: [
       "Armee der Tristen",
       "Zeit",
