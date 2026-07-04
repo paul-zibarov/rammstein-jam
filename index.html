@@ -33,6 +33,24 @@
       </nav>
 
       <section id="panel-vote" class="panel active" role="tabpanel">
+        <details class="token-settings" id="token-settings">
+          <summary>GitHub токен для голосування</summary>
+          <p class="hint">
+            Вставте той самий fine-grained PAT з правом <strong>Contents: Read and write</strong>.
+            Зберігається лише у вашому браузері — не потрапляє в репозиторій.
+          </p>
+          <div class="token-row">
+            <input
+              id="github-token"
+              type="password"
+              placeholder="github_pat_…"
+              autocomplete="off"
+            />
+            <button type="button" class="btn btn-secondary" id="save-token-btn">Зберегти</button>
+          </div>
+          <p class="token-status" id="token-status"></p>
+        </details>
+
         <form id="vote-form" class="vote-form">
           <div class="name-row">
             <label for="voter-name">Ваше ім'я</label>
