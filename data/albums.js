@@ -78,6 +78,7 @@ const albums = [
       "Stein um Stein",
       "Ohne dich",
       "Amour",
+      "Amerika",
     ],
   },
   {
