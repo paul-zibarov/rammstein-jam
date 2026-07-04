@@ -2,9 +2,13 @@ let MIN_SONGS_PER_ALBUM = 3;
 let albums = [];
 
 const MOSKAU_KEY = "rosenrot::Moskau";
+const NEIN_YT_ID = "5lvtswkYFWU";
+const EXPLOSION_DURATION_MS = 2500;
 const IMG = 'referrerpolicy="no-referrer"';
 const neinAudio = new Audio("/sounds/nein.mp3");
 neinAudio.volume = 1;
+
+let neinPlayer = null;
 
 const els = {
   albums: document.getElementById("albums"),
@@ -40,6 +44,14 @@ function hasMoskau() {
 }
 
 function playNein() {
+  if (neinPlayer?.playVideo) {
+    neinPlayer.unMute();
+    neinPlayer.setVolume(100);
+    neinPlayer.seekTo(0, true);
+    neinPlayer.playVideo();
+    return;
+  }
+
   neinAudio.currentTime = 0;
   neinAudio.play().catch(() => {
     const line = new SpeechSynthesisUtterance("Nein!");
@@ -50,43 +62,32 @@ function playNein() {
   });
 }
 
-function playBoom() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const length = ctx.sampleRate * 0.6;
-    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < length; i++) {
-      data[i] = (Math.random() * 2 - 1) * (1 - i / length) ** 1.8;
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buffer;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(1.2, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.55);
-    const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.value = 900;
-    src.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-    src.start();
-  } catch {
-    /* без звуку вибуху */
-  }
-}
-
 function triggerMoskauDenied() {
   document.body.classList.add("screen-shake");
   els.explosion.classList.remove("hidden");
   els.explosion.setAttribute("aria-hidden", "false");
   els.explosion.innerHTML = `
-    <div class="explosion-flash"></div>
+    <video class="explosion-video" autoplay muted playsinline>
+      <source src="/images/explosion.webm" type="video/webm" />
+    </video>
+    <img class="explosion-gif" src="/images/explosion.gif" alt="" width="200" height="200" hidden />
     <div class="explosion-text">NEIN!</div>
-    ${Array.from({ length: 24 }, (_, i) => `<span class="particle" style="--i:${i}"></span>`).join("")}
   `;
 
-  playBoom();
+  const video = els.explosion.querySelector(".explosion-video");
+  const gif = els.explosion.querySelector(".explosion-gif");
+
+  if (video) {
+    video.play().catch(() => {
+      video.hidden = true;
+      gif.hidden = false;
+    });
+    video.addEventListener("error", () => {
+      video.hidden = true;
+      gif.hidden = false;
+    });
+  }
+
   playNein();
   showToast("NEIN! Moskau не пройде.", true);
 
@@ -98,7 +99,8 @@ function triggerMoskauDenied() {
     els.explosion.classList.add("hidden");
     els.explosion.setAttribute("aria-hidden", "true");
     els.explosion.innerHTML = "";
-  }, 1400);
+    if (neinPlayer?.pauseVideo) neinPlayer.pauseVideo();
+  }, EXPLOSION_DURATION_MS);
 }
 
 function countByAlbum() {
@@ -414,5 +416,25 @@ async function init() {
   renderAlbums();
   updateSelectionUI();
 }
+
+function initNeinPlayer() {
+  neinPlayer = new YT.Player("nein-player", {
+    height: "1",
+    width: "1",
+    videoId: NEIN_YT_ID,
+    playerVars: {
+      autoplay: 0,
+      controls: 0,
+      disablekb: 1,
+      fs: 0,
+      modestbranding: 1,
+      rel: 0,
+      playsinline: 1,
+    },
+  });
+}
+
+window.onYouTubeIframeAPIReady = initNeinPlayer;
+if (window.YT?.Player) initNeinPlayer();
 
 init();
