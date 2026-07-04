@@ -120,6 +120,7 @@ const albums = [
       "Liebe ist für alle da",
       "Mehr",
       "Roter Sand",
+      "Führe mich",
     ],
   },
   {
