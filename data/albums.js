@@ -1,3 +1,8 @@
+function youtubeUrl(songName, albumId) {
+  const query = encodeURIComponent(`Rammstein ${songName} official`);
+  return `https://www.youtube.com/results?search_query=${query}`;
+}
+
 const albums = [
   {
     id: "herzeleid",
@@ -162,4 +167,15 @@ function findSong(songKey) {
   return { album, songName };
 }
 
-module.exports = { albums, getSongKey, findSong };
+function albumsForClient() {
+  return albums.map((album) => ({
+    ...album,
+    songs: album.songs.map((songName) => ({
+      name: songName,
+      key: getSongKey(album.id, songName),
+      youtubeUrl: youtubeUrl(songName, album.id),
+    })),
+  }));
+}
+
+module.exports = { albums, getSongKey, findSong, youtubeUrl, albumsForClient };

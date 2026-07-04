@@ -1,17 +1,17 @@
 {
   "name": "rammstein-jam",
-  "version": "1.0.0",
-  "description": "Голосування за пісні Rammstein — знаходимо збіги серед друзів",
+  "version": "2.0.0",
+  "description": "Голосування за пісні Rammstein — спільний плейлист",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
-    "build:docs": "node scripts/build-docs.js"
+    "dev": "node server.js"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
+    "@libsql/client": "^0.14.0",
     "better-sqlite3": "^11.9.1",
     "express": "^4.21.2"
   }

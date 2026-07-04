@@ -1,66 +1,47 @@
 # Rammstein Jam
 
-Міні веб-додаток для голосування за улюблені пісні Rammstein. Друзі обирають треки з усіх альбомів — сайт рахує збіги голосів і показує, за які пісні проголосували однаково.
+Голосування за пісні Rammstein серед друзів. Кожен обирає скільки завгодно треків — у фінальний плейлист потрапляє **по одному лідеру з кожного альбому**.
 
 ## Можливості
 
-- 8 студійних альбомів з обкладинками та повним треклістом
-- Кожен учасник обирає до 5 пісень
-- Голоси зберігаються спільно (файл `data/votes.json` у репозиторії)
-- Повторне голосування під тим самим ім'ям оновлює вибір
-- Результати: збіги (2+ голоси), пари учасників зі спільними піснями, рейтинг
+- 8 альбомів з обкладинками та посиланнями на YouTube
+- Необмежена кількість пісень на одного учасника
+- **Фінальний плейлист** — по 1 треку з кожного альбому (найбільше голосів)
+- **Таблиця лідерів** усіх пісень
+- Збіги голосів між учасниками
+- Без токенів — звичайний бекенд із базою даних
 
-## GitHub Pages (онлайн)
-
-Сайт деплоїться автоматично через GitHub Actions на **GitHub Pages**.
-
-**URL:** `https://paul-zibarov.github.io/rammstein-jam/`
-
-### Налаштування голосування
-
-1. Створіть [fine-grained Personal Access Token](https://github.com/settings/tokens?type=beta):
-   - Repository access: тільки цей репозиторій
-   - Permissions: **Contents → Read and write**
-2. На сайті розгорніть **«GitHub токен для голосування»** і вставте токен
-3. Токен зберігається лише у вашому браузері (localStorage)
-
-Кожен учасник може використати той самий токен або створити свій власний.
-
-> GitHub **блокує** вбудовування токена в код сайту (push protection), тому секрет `VOTES_TOKEN` у Actions **не використовується** — токен вводиться вручну на сайті.
-
-### Увімкнення GitHub Pages
-
-1. **Settings → Pages → Build and deployment**
-   - **Source:** Deploy from a branch
-   - **Branch:** `gh-pages` → `/ (root)` → Save
-
-   Альтернатива: гілка `main`, папка `/docs`.
-
-2. Після push у `main` workflow автоматично оновлює гілку `gh-pages`
-
-**URL:** `https://paul-zibarov.github.io/rammstein-jam/`
-
-## Локальний запуск (Node + SQLite)
+## Локальний запуск
 
 ```bash
 npm install
 npm start
 ```
 
-Відкрийте [http://localhost:3000](http://localhost:3000).
+Відкрийте [http://localhost:3000](http://localhost:3000). Голоси зберігаються в `votes.db` (SQLite).
 
-## Локальний перегляд статичної версії (як на GitHub Pages)
+## Деплой на Render (безкоштовно)
 
-```bash
-npm run build:docs
-npx --yes serve docs
-```
+1. Створіть базу на [Turso](https://turso.tech/) (безкоштовно, постійне сховище):
+   ```bash
+   turso db create rammstein-jam
+   turso db tokens create rammstein-jam
+   ```
+2. На [Render](https://render.com/) → **New → Blueprint** → підключіть цей репозиторій
+3. Додайте змінні середовища:
+   - `TURSO_DATABASE_URL` — URL бази
+   - `TURSO_AUTH_TOKEN` — токен Turso
+4. Після деплою сайт буде на `https://rammstein-jam.onrender.com`
 
-## Структура
+Без Turso на Render дані SQLite зникнуть після перезапуску — для продакшену потрібна Turso.
 
-| Шлях | Опис |
-|------|------|
-| `docs/` | Статичний сайт для GitHub Pages |
-| `data/votes.json` | Спільне сховище голосів |
-| `server.js` | Локальний сервер з SQLite |
-| `.github/workflows/deploy-pages.yml` | Деплой на GitHub Pages |
+## API
+
+| Метод | Шлях | Опис |
+|-------|------|------|
+| GET | `/api/albums` | Альбоми, пісні, YouTube |
+| POST | `/api/votes` | `{ name, songs: [{ albumId, songName }] }` |
+| GET | `/api/playlist` | Фінальний плейлист (1 трек / альбом) |
+| GET | `/api/leaderboard` | Таблиця лідерів |
+| GET | `/api/matches` | Збіги між учасниками |
+| GET | `/api/votes` | Хто за що голосував |
