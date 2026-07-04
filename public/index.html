@@ -44,12 +44,16 @@
           </div>
 
           <p class="hint">
-            Оберіть <strong>будь-яку кількість</strong> пісень з усіх альбомів.
+            З <strong>кожного</strong> альбому оберіть мінімум <strong id="min-per-album">3</strong> пісні
+            (усього мінімум <strong id="min-total">24</strong>).
             У фінальний плейлист потрапить по <strong>одному лідеру</strong> з кожного альбому.
             Повторне голосування під тим самим ім'ям оновлює вибір.
           </p>
 
-          <p class="selection-counter">Обрано: <span id="selected-count">0</span> пісень</p>
+          <p class="selection-counter">
+            Обрано: <span id="selected-count">0</span> пісень ·
+            альбомів готово: <span id="albums-ready">0</span> / <span id="albums-total">8</span>
+          </p>
 
           <div id="albums" class="albums"></div>
 

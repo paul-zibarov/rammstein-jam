@@ -203,6 +203,25 @@ body {
   font-size: 0.85rem;
 }
 
+.album-pick-count {
+  margin-left: auto;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.album-pick-count.need {
+  background: rgba(196, 30, 30, 0.15);
+  color: #ff8a8a;
+}
+
+.album-pick-count.ok {
+  background: rgba(62, 207, 142, 0.15);
+  color: var(--success);
+}
+
 .song-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

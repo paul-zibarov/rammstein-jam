@@ -1,3 +1,5 @@
+const MIN_SONGS_PER_ALBUM = 3;
+
 function youtubeUrl(songName, albumId) {
   const query = encodeURIComponent(`Rammstein ${songName} official`);
   return `https://www.youtube.com/results?search_query=${query}`;
@@ -179,4 +181,4 @@ function albumsForClient() {
   }));
 }
 
-module.exports = { albums, getSongKey, findSong, youtubeUrl, albumsForClient };
+module.exports = { albums, getSongKey, findSong, youtubeUrl, albumsForClient, MIN_SONGS_PER_ALBUM };

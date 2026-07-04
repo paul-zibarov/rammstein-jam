@@ -1,4 +1,4 @@
-const selected = new Set();
+let MIN_SONGS_PER_ALBUM = 3;
 let albums = [];
 
 const IMG = 'referrerpolicy="no-referrer"';
@@ -8,6 +8,10 @@ const els = {
   form: document.getElementById("vote-form"),
   name: document.getElementById("voter-name"),
   selectedCount: document.getElementById("selected-count"),
+  albumsReady: document.getElementById("albums-ready"),
+  albumsTotal: document.getElementById("albums-total"),
+  minPerAlbum: document.getElementById("min-per-album"),
+  minTotal: document.getElementById("min-total"),
   submitBtn: document.getElementById("submit-btn"),
   toast: document.getElementById("vote-toast"),
   tabs: document.querySelectorAll(".tab"),
@@ -25,16 +29,56 @@ const els = {
   votersList: document.getElementById("voters-list"),
 };
 
+const selected = new Set();
+
+function countByAlbum() {
+  const counts = new Map();
+  for (const key of selected) {
+    const albumId = key.split("::")[0];
+    counts.set(albumId, (counts.get(albumId) || 0) + 1);
+  }
+  return counts;
+}
+
+function isVoteValid() {
+  if (!els.name.value.trim()) return false;
+  const counts = countByAlbum();
+  if (counts.size !== albums.length) return false;
+  return albums.every((album) => (counts.get(album.id) || 0) >= MIN_SONGS_PER_ALBUM);
+}
+
 function showToast(message, isError = false) {
   els.toast.textContent = message;
   els.toast.classList.toggle("error", isError);
   els.toast.classList.remove("hidden");
   clearTimeout(showToast._timer);
-  showToast._timer = setTimeout(() => els.toast.classList.add("hidden"), 4000);
+  showToast._timer = setTimeout(() => els.toast.classList.add("hidden"), 4500);
 }
 
 function updateSelectionUI() {
+  const counts = countByAlbum();
+  let ready = 0;
+
   els.selectedCount.textContent = selected.size;
+  els.albumsTotal.textContent = albums.length;
+  els.minPerAlbum.textContent = MIN_SONGS_PER_ALBUM;
+  els.minTotal.textContent = albums.length * MIN_SONGS_PER_ALBUM;
+
+  document.querySelectorAll(".album").forEach((article) => {
+    const albumId = article.dataset.album;
+    const count = counts.get(albumId) || 0;
+    const ok = count >= MIN_SONGS_PER_ALBUM;
+    if (ok) ready += 1;
+
+    const badge = article.querySelector(".album-pick-count");
+    if (badge) {
+      badge.textContent = `${count} / ${MIN_SONGS_PER_ALBUM}`;
+      badge.classList.toggle("ok", ok);
+      badge.classList.toggle("need", !ok);
+    }
+  });
+
+  els.albumsReady.textContent = ready;
 
   document.querySelectorAll(".song-item").forEach((item) => {
     const key = item.dataset.key;
@@ -44,7 +88,7 @@ function updateSelectionUI() {
     input.checked = checked;
   });
 
-  els.submitBtn.disabled = selected.size === 0 || !els.name.value.trim();
+  els.submitBtn.disabled = !isVoteValid();
 }
 
 function renderAlbums() {
@@ -58,6 +102,7 @@ function renderAlbums() {
           <h3>${album.name}</h3>
           <span>${album.year}</span>
         </div>
+        <span class="album-pick-count need">0 / ${MIN_SONGS_PER_ALBUM}</span>
       </header>
       <div class="song-list">
         ${album.songs
@@ -118,7 +163,7 @@ els.name.addEventListener("input", updateSelectionUI);
 els.form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const name = els.name.value.trim();
-  if (!name || selected.size === 0) return;
+  if (!isVoteValid()) return;
 
   const songs = [...selected].map((key) => {
     const [albumId, ...rest] = key.split("::");
@@ -256,7 +301,6 @@ async function loadResults() {
           const chips = v.songs
             .map((s) => {
               const album = albums.find((a) => a.id === s.albumId);
-              const song = album?.songs.find((t) => t.key === s.key);
               return `<span class="chip">
                 ${album ? `<img src="${album.cover}" alt="" ${IMG} />` : ""}
                 ${s.songName}
@@ -278,7 +322,9 @@ async function loadResults() {
 
 async function init() {
   const res = await fetch("/api/albums");
-  albums = await res.json();
+  const data = await res.json();
+  albums = data.albums;
+  MIN_SONGS_PER_ALBUM = data.minSongsPerAlbum || 3;
   renderAlbums();
   updateSelectionUI();
 }

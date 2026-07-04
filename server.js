@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path");
-const { albumsForClient } = require("./data/albums");
+const { albumsForClient, MIN_SONGS_PER_ALBUM } = require("./data/albums");
 const { initDb, getDb, validateName, validateSongs } = require("./lib/db");
 const { computeLeaderboard, computePlaylist, computeMatches } = require("./lib/stats");
 
@@ -15,7 +15,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.get("/api/albums", (_req, res) => {
-  res.json(albumsForClient());
+  res.json({ albums: albumsForClient(), minSongsPerAlbum: MIN_SONGS_PER_ALBUM });
 });
 
 app.get("/api/votes", async (_req, res, next) => {
@@ -91,7 +91,12 @@ app.use((err, _req, res, _next) => {
 });
 
 initDb()
-  .then(() => {
+  .then(async () => {
+    if (process.env.CLEAR_DB === "1") {
+      await getDb().clearAll();
+      console.log("Базу очищено (CLEAR_DB=1)");
+    }
+
     app.listen(PORT, "0.0.0.0", () => {
       const storage = process.env.DATABASE_URL ? "PostgreSQL" : "SQLite";
       console.log(`Rammstein Jam (${storage}): http://0.0.0.0:${PORT}`);
