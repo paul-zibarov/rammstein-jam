@@ -1,7 +1,10 @@
 let MIN_SONGS_PER_ALBUM = 3;
 let albums = [];
 
+const MOSKAU_KEY = "rosenrot::Moskau";
 const IMG = 'referrerpolicy="no-referrer"';
+const neinAudio = new Audio("/sounds/nein.mp3");
+neinAudio.volume = 1;
 
 const els = {
   albums: document.getElementById("albums"),
@@ -27,9 +30,76 @@ const els = {
   matchesList: document.getElementById("matches-list"),
   pairwiseList: document.getElementById("pairwise-list"),
   votersList: document.getElementById("voters-list"),
+  explosion: document.getElementById("explosion-overlay"),
 };
 
 const selected = new Set();
+
+function hasMoskau() {
+  return selected.has(MOSKAU_KEY);
+}
+
+function playNein() {
+  neinAudio.currentTime = 0;
+  neinAudio.play().catch(() => {
+    const line = new SpeechSynthesisUtterance("Nein!");
+    line.lang = "de-DE";
+    line.rate = 0.85;
+    line.pitch = 0.6;
+    speechSynthesis.speak(line);
+  });
+}
+
+function playBoom() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const length = ctx.sampleRate * 0.6;
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < length; i++) {
+      data[i] = (Math.random() * 2 - 1) * (1 - i / length) ** 1.8;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(1.2, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.55);
+    const filter = ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 900;
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    src.start();
+  } catch {
+    /* без звуку вибуху */
+  }
+}
+
+function triggerMoskauDenied() {
+  document.body.classList.add("screen-shake");
+  els.explosion.classList.remove("hidden");
+  els.explosion.setAttribute("aria-hidden", "false");
+  els.explosion.innerHTML = `
+    <div class="explosion-flash"></div>
+    <div class="explosion-text">NEIN!</div>
+    ${Array.from({ length: 24 }, (_, i) => `<span class="particle" style="--i:${i}"></span>`).join("")}
+  `;
+
+  playBoom();
+  playNein();
+  showToast("NEIN! Moskau не пройде.", true);
+
+  selected.delete(MOSKAU_KEY);
+  updateSelectionUI();
+
+  setTimeout(() => {
+    document.body.classList.remove("screen-shake");
+    els.explosion.classList.add("hidden");
+    els.explosion.setAttribute("aria-hidden", "true");
+    els.explosion.innerHTML = "";
+  }, 1400);
+}
 
 function countByAlbum() {
   const counts = new Map();
@@ -108,7 +178,7 @@ function renderAlbums() {
         ${album.songs
           .map(
             (song) => `
-          <label class="song-item" data-key="${song.key}">
+          <label class="song-item${song.key === MOSKAU_KEY ? " song-trap" : ""}" data-key="${song.key}">
             <input type="checkbox" value="${song.key}" />
             <span class="song-title">${song.name}</span>
             <a class="song-yt" href="${song.youtubeUrl}" target="_blank" rel="noopener" title="YouTube" onclick="event.stopPropagation()">▶</a>
@@ -162,6 +232,12 @@ els.name.addEventListener("input", updateSelectionUI);
 
 els.form.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  if (hasMoskau()) {
+    triggerMoskauDenied();
+    return;
+  }
+
   const name = els.name.value.trim();
   if (!isVoteValid()) return;
 
@@ -180,11 +256,21 @@ els.form.addEventListener("submit", async (e) => {
       body: JSON.stringify({ name, songs }),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Помилка збереження");
+    if (!res.ok) {
+      if (data.error === "NEIN!") {
+        triggerMoskauDenied();
+        return;
+      }
+      throw new Error(data.error || "Помилка збереження");
+    }
 
     showToast(data.updated ? `Голос оновлено, ${name}!` : `Дякуємо, ${name}!`);
     switchTab("results");
   } catch (err) {
+    if (err.message === "NEIN!") {
+      triggerMoskauDenied();
+      return;
+    }
     showToast(err.message, true);
   } finally {
     els.submitBtn.textContent = "Відправити голос";

@@ -1,4 +1,6 @@
 const MIN_SONGS_PER_ALBUM = 3;
+const MOSKAU_KEY = "rosenrot::Moskau";
+const FORBIDDEN_SONGS = new Set([MOSKAU_KEY]);
 
 function youtubeUrl(songName, albumId) {
   const query = encodeURIComponent(`Rammstein ${songName} official`);
@@ -98,6 +100,7 @@ const albums = [
       "Te Quiero Puta!",
       "Feuer und Wasser",
       "Ein Lied",
+      "Moskau",
     ],
   },
   {
@@ -182,4 +185,13 @@ function albumsForClient() {
   }));
 }
 
-module.exports = { albums, getSongKey, findSong, youtubeUrl, albumsForClient, MIN_SONGS_PER_ALBUM };
+module.exports = {
+  albums,
+  getSongKey,
+  findSong,
+  youtubeUrl,
+  albumsForClient,
+  MIN_SONGS_PER_ALBUM,
+  MOSKAU_KEY,
+  FORBIDDEN_SONGS,
+};
