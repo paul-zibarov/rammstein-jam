@@ -9,31 +9,45 @@
 - **Фінальний плейлист** — по 1 треку з кожного альбому (найбільше голосів)
 - **Таблиця лідерів** усіх пісень
 - Збіги голосів між учасниками
-- Без токенів — звичайний бекенд із базою даних
+- Без токенів
 
-## Локальний запуск
+## Локально
 
 ```bash
 npm install
 npm start
 ```
 
-Відкрийте [http://localhost:3000](http://localhost:3000). Голоси зберігаються в `votes.db` (SQLite).
+→ http://localhost:3000 (голоси в `votes.db`)
 
-## Деплой на Render (безкоштовно)
+---
 
-1. Створіть базу на [Turso](https://turso.tech/) (безкоштовно, постійне сховище):
-   ```bash
-   turso db create rammstein-jam
-   turso db tokens create rammstein-jam
-   ```
-2. На [Render](https://render.com/) → **New → Blueprint** → підключіть цей репозиторій
-3. Додайте змінні середовища:
-   - `TURSO_DATABASE_URL` — URL бази
-   - `TURSO_AUTH_TOKEN` — токен Turso
-4. Після деплою сайт буде на `https://rammstein-jam.onrender.com`
+## Деплой на Railway (рекомендовано)
 
-Без Turso на Render дані SQLite зникнуть після перезапуску — для продакшену потрібна Turso.
+**Один аккаунт** — і хостинг, і база даних. Безкоштовно ~$5 кредитів/міс.
+
+### Крок 1 — Railway
+
+1. Відкрийте [railway.app](https://railway.app/) → увійдіть через **GitHub**
+2. **New Project** → **Deploy from GitHub repo** → оберіть `rammstein-jam`
+3. Railway сам збере і запустить додаток
+
+### Крок 2 — База даних
+
+1. У тому ж проєкті натисніть **+ New** → **Database** → **PostgreSQL**
+2. Відкрийте сервіс **rammstein-jam** (ваш додаток) → вкладка **Variables**
+3. Натисніть **Add Reference** → оберіть PostgreSQL → `DATABASE_URL`
+4. Railway перезапустить додаток — голоси зберігатимуться постійно
+
+### Крок 3 — Публічний URL
+
+1. Сервіс додатку → **Settings** → **Networking** → **Generate Domain**
+2. Отримаєте посилання на кшталт `rammstein-jam-production.up.railway.app`
+3. Поділіться ним із друзями
+
+Готово.
+
+---
 
 ## API
 

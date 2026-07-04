@@ -92,9 +92,9 @@ app.use((err, _req, res, _next) => {
 
 initDb()
   .then(() => {
-    app.listen(PORT, () => {
-      const storage = process.env.TURSO_DATABASE_URL ? "Turso" : "SQLite";
-      console.log(`Rammstein Jam (${storage}): http://localhost:${PORT}`);
+    app.listen(PORT, "0.0.0.0", () => {
+      const storage = process.env.DATABASE_URL ? "PostgreSQL" : "SQLite";
+      console.log(`Rammstein Jam (${storage}): http://0.0.0.0:${PORT}`);
     });
   })
   .catch((err) => {
