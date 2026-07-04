@@ -18,14 +18,19 @@
 
 ### Одноразове налаштування
 
-1. У репозиторії: **Settings → Pages → Build and deployment → Source: GitHub Actions**
+1. У репозиторії: **Settings → Pages → Build and deployment**
+   - **Source:** Deploy from a branch
+   - **Branch:** `gh-pages` → `/ (root)` → Save
+   
+   Альтернатива: гілка `main`, папка `/docs` (без ін'єкції токена в CI).
+
 2. Створіть [fine-grained Personal Access Token](https://github.com/settings/tokens?type=beta):
    - Repository access: тільки цей репозиторій
    - Permissions: **Contents → Read and write**
 3. Додайте секрет: **Settings → Secrets and variables → Actions → New repository secret**
    - Name: `VOTES_TOKEN`
    - Value: ваш токен
-4. Змерджте зміни в `main` — workflow `Deploy GitHub Pages` опублікує сайт
+4. Запуште зміни в `main` — workflow автоматично оновить гілку `gh-pages`
 
 Без `VOTES_TOKEN` сайт працює в режимі перегляду результатів; голосування буде недоступне.
 
