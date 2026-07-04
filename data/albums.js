@@ -151,6 +151,7 @@ const albums = [
       "Dämmerung",
       "Adieu",
       "Zick Zack",
+      "Dicke Titten",
     ],
   },
 ];
