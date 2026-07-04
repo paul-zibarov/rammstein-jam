@@ -199,15 +199,6 @@ function renderAlbums() {
     else selected.delete(input.value);
     updateSelectionUI();
   });
-
-  els.albums.addEventListener("click", (e) => {
-    if (e.target.closest(".song-yt")) return;
-    const item = e.target.closest(".song-item");
-    if (!item || e.target.tagName === "INPUT") return;
-    const input = item.querySelector("input");
-    input.checked = !input.checked;
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-  });
 }
 
 function switchTab(tabId) {
@@ -316,10 +307,17 @@ async function loadResults() {
           <img class="playlist-cover" src="${track.albumCover}" alt="" loading="lazy" ${IMG} />
           <div class="playlist-info">
             <p class="playlist-album">${track.albumName} <span>${track.albumYear}</span></p>
-            <p class="playlist-song">${track.songName}</p>
-            <p class="playlist-meta">${track.voteCount} голосів · ${track.voters.join(", ")}</p>
+            ${track.songs
+              .map(
+                (song) => `
+            <div class="playlist-song-row${track.songs.length > 1 ? " playlist-tie" : ""}">
+              <p class="playlist-song">${song.songName}</p>
+              <p class="playlist-meta">${track.voteCount} голосів · ${song.voters.join(", ")}</p>
+              ${ytLink(song.youtubeUrl, "▶ Слухати")}
+            </div>`
+              )
+              .join("")}
           </div>
-          ${ytLink(track.youtubeUrl, "▶ Слухати")}
         </div>`
         )
         .join("");

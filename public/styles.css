@@ -296,10 +296,28 @@ body {
 
 .playlist-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   padding: 0.85rem 0;
   border-bottom: 1px solid var(--border);
+}
+
+.playlist-song-row {
+  margin-top: 0.35rem;
+}
+
+.playlist-song-row:first-of-type {
+  margin-top: 0.2rem;
+}
+
+.playlist-song-row.playlist-tie {
+  padding: 0.5rem 0;
+  border-top: 1px dashed var(--border);
+}
+
+.playlist-song-row.playlist-tie:first-of-type {
+  border-top: none;
+  padding-top: 0;
 }
 
 .playlist-item:last-child {
