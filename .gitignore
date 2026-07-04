@@ -3,3 +3,4 @@ votes.db
 votes.db-wal
 votes.db-shm
 .env
+docs/config.js
