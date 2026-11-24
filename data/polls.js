@@ -12,7 +12,8 @@ const polls = [
     id: "tribute-vol-2",
     title: "Rammstein Tribute Vol. 2",
     status: "active",
-    description: "Нове голосування — знову обираємо треки з усіх альбомів для спільного плейлисту.",
+    description: "Нове голосування — знову обираємо треки з усіх альбомів для спільного плейлисту. Пісні з плейлисту Vol. 1 заблоковані.",
+    blockedFromPollId: "tribute-vol-1",
   },
 ];
 

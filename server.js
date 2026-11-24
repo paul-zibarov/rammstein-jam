@@ -9,7 +9,12 @@ const {
   resolvePollId,
 } = require("./data/polls");
 const { initDb, getDb, validateName, validateSongs } = require("./lib/db");
-const { computeLeaderboard, computePlaylist, computeMatches } = require("./lib/stats");
+const {
+  computeLeaderboard,
+  computePlaylist,
+  computeMatches,
+  playlistSongKeys,
+} = require("./lib/stats");
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -31,6 +36,22 @@ function requirePoll(req, res) {
   return poll;
 }
 
+async function getBlockedKeysForPoll(poll) {
+  if (!poll?.blockedFromPollId) return new Set();
+  const rows = await getDb().getVoteRows(poll.blockedFromPollId);
+  return playlistSongKeys(rows);
+}
+
+async function albumsPayloadForPoll(poll) {
+  const blockedKeys = await getBlockedKeysForPoll(poll);
+  return {
+    poll,
+    albums: albumsForClient({ blockedKeys }),
+    minSongsPerAlbum: MIN_SONGS_PER_ALBUM,
+    blockedSongKeys: [...blockedKeys],
+  };
+}
+
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
@@ -50,14 +71,14 @@ app.get("/api/polls/:pollId", (req, res) => {
   res.json({ poll });
 });
 
-app.get("/api/polls/:pollId/albums", (req, res) => {
-  const poll = requirePoll(req, res);
-  if (!poll) return;
-  res.json({
-    poll,
-    albums: albumsForClient(),
-    minSongsPerAlbum: MIN_SONGS_PER_ALBUM,
-  });
+app.get("/api/polls/:pollId/albums", async (req, res, next) => {
+  try {
+    const poll = requirePoll(req, res);
+    if (!poll) return;
+    res.json(await albumsPayloadForPoll(poll));
+  } catch (err) {
+    next(err);
+  }
 });
 
 app.get("/api/polls/:pollId/votes", async (req, res, next) => {
@@ -123,7 +144,8 @@ app.post("/api/polls/:pollId/votes", async (req, res, next) => {
     const nameResult = validateName(req.body?.name);
     if (nameResult.error) return res.status(400).json({ error: nameResult.error });
 
-    const songsResult = validateSongs(req.body?.songs);
+    const blockedKeys = await getBlockedKeysForPoll(poll);
+    const songsResult = validateSongs(req.body?.songs, { blockedKeys });
     if (songsResult.error) return res.status(400).json({ error: songsResult.error });
 
     const { voterId, updated } = await getDb().upsertVote(
@@ -146,13 +168,13 @@ app.post("/api/polls/:pollId/votes", async (req, res, next) => {
 });
 
 // Backward-compatible aliases → active poll
-app.get("/api/albums", (_req, res) => {
-  const poll = getActivePoll();
-  res.json({
-    poll,
-    albums: albumsForClient(),
-    minSongsPerAlbum: MIN_SONGS_PER_ALBUM,
-  });
+app.get("/api/albums", async (_req, res, next) => {
+  try {
+    const poll = getActivePoll();
+    res.json(await albumsPayloadForPoll(poll));
+  } catch (err) {
+    next(err);
+  }
 });
 
 app.get("/api/votes", async (_req, res, next) => {
@@ -212,7 +234,8 @@ app.post("/api/votes", async (req, res, next) => {
     const nameResult = validateName(req.body?.name);
     if (nameResult.error) return res.status(400).json({ error: nameResult.error });
 
-    const songsResult = validateSongs(req.body?.songs);
+    const blockedKeys = await getBlockedKeysForPoll(poll);
+    const songsResult = validateSongs(req.body?.songs, { blockedKeys });
     if (songsResult.error) return res.status(400).json({ error: songsResult.error });
 
     const { voterId, updated } = await getDb().upsertVote(

@@ -175,14 +175,20 @@ function findSong(songKey) {
   return { album, songName };
 }
 
-function albumsForClient() {
+function albumsForClient(options = {}) {
+  const blockedKeys = options.blockedKeys instanceof Set ? options.blockedKeys : new Set(options.blockedKeys || []);
+
   return albums.map((album) => ({
     ...album,
-    songs: album.songs.map((songName) => ({
-      name: songName,
-      key: getSongKey(album.id, songName),
-      youtubeUrl: youtubeUrl(songName, album.id),
-    })),
+    songs: album.songs.map((songName) => {
+      const key = getSongKey(album.id, songName);
+      return {
+        name: songName,
+        key,
+        youtubeUrl: youtubeUrl(songName, album.id),
+        locked: blockedKeys.has(key),
+      };
+    }),
   }));
 }
 

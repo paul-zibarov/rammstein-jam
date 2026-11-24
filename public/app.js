@@ -198,14 +198,18 @@ function renderAlbums() {
       </header>
       <div class="song-list">
         ${album.songs
-          .map(
-            (song) => `
-          <label class="song-item${song.key === MOSKAU_KEY ? " song-trap" : ""}" data-key="${song.key}">
-            <input type="checkbox" value="${song.key}" />
+          .map((song) => {
+            const classes = ["song-item"];
+            if (song.key === MOSKAU_KEY) classes.push("song-trap");
+            if (song.locked) classes.push("song-locked");
+            return `
+          <label class="${classes.join(" ")}" data-key="${song.key}"${song.locked ? ' title="Вже в плейлисті Vol. 1"' : ""}>
+            <input type="checkbox" value="${song.key}" ${song.locked ? "disabled" : ""} />
             <span class="song-title">${song.name}</span>
+            ${song.locked ? '<span class="song-locked-badge">Vol. 1</span>' : ""}
             <a class="song-yt" href="${song.youtubeUrl}" target="_blank" rel="noopener" title="YouTube" onclick="event.stopPropagation()">▶</a>
-          </label>`
-          )
+          </label>`;
+          })
           .join("")}
       </div>
     </article>`
@@ -214,7 +218,7 @@ function renderAlbums() {
 
   els.albums.addEventListener("change", (e) => {
     const input = e.target;
-    if (input.type !== "checkbox") return;
+    if (input.type !== "checkbox" || input.disabled) return;
     if (input.checked) selected.add(input.value);
     else selected.delete(input.value);
     updateSelectionUI();
