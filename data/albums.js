@@ -7,11 +7,13 @@ function youtubeUrl(songName, albumId) {
 
 function normalizeSong(entry) {
   if (typeof entry === "string") {
-    return { name: entry, bonus: false };
+    return { name: entry, bonus: false, cover: null, year: null };
   }
   return {
     name: String(entry.name),
     bonus: Boolean(entry.bonus),
+    cover: entry.cover || null,
+    year: entry.year ?? null,
   };
 }
 
@@ -170,6 +172,39 @@ const albums = [
       "Adieu",
     ],
   },
+  {
+    id: "singles",
+    name: "Сингли",
+    year: "1997–2011",
+    kind: "singles",
+    cover: "https://cdn.rammsteinworld.com/thumb/500/uploads/discographie/singles/mein-land/mein-land.jpg",
+    songs: [
+      {
+        name: "Das Modell",
+        year: 1997,
+        cover:
+          "https://cdn.rammsteinworld.com/thumb/500/uploads/discographie/singles/das-modell/das-modell.jpg",
+      },
+      {
+        name: "Stripped",
+        year: 1998,
+        cover:
+          "https://cdn.rammsteinworld.com/thumb/500/uploads/discographie/singles/stripped/stripped.jpg",
+      },
+      {
+        name: "Halleluja",
+        year: 2001,
+        cover:
+          "https://cdn.rammsteinworld.com/thumb/500/uploads/discographie/singles/links-2-3-4/links-2-3-4.jpg",
+      },
+      {
+        name: "Mein Land",
+        year: 2011,
+        cover:
+          "https://cdn.rammsteinworld.com/thumb/500/uploads/discographie/singles/mein-land/mein-land.jpg",
+      },
+    ],
+  },
 ];
 
 function getSongEntries(album) {
@@ -203,12 +238,15 @@ function albumsForClient(options = {}) {
     name: album.name,
     year: album.year,
     cover: album.cover,
+    kind: album.kind || "album",
     songs: getSongEntries(album).map((song) => {
       const key = getSongKey(album.id, song.name);
       return {
         name: song.name,
         key,
         bonus: song.bonus,
+        cover: song.cover,
+        year: song.year,
         youtubeUrl: youtubeUrl(song.name, album.id),
         locked: blockedKeys.has(key),
       };
