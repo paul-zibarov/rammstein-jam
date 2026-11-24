@@ -39,7 +39,8 @@ const els = {
 
 const selected = new Set();
 
-const SONGSTERR_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2" y="3" width="20" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6 8.5h8M6 12h12M6 15.5h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="17.5" cy="8.5" r="1.4" fill="currentColor"/></svg>`;
+/** Songsterr mark (Arcticons, CC BY-SA) — guitar headstock + S. */
+const SONGSTERR_ICON = `<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m12.078 15.28l-.485-1.786l-1.705.081l-.813 1.948l.813 2.03h1.705l.485-1.948m1.827-.127l-1.559-.05m.174 17.474l-.485-1.785l-1.705.081l-.813 1.948l.813 2.029h1.705l.485-1.948m1.386-.127l-1.115-.05m.192-8.959l-.485-1.786l-1.705.082l-.813 1.948l.813 2.029h1.705l.485-1.948m1.227-.126l-.956-.05m13.323 18.302c-.63.464-2.778 1.977-5.51-.14l-5.69-5.037s-1.772-1.865-1.399-3.917s.56-20.055-.466-25.465c0 0 5.085-3.31 10.474-3.483c5.374.19 10.433 3.483 10.433 3.483c-.277 1.463-.466 3.846-.536 6.563c-10.755-1.052-11.147 4.746-11.147 7.552c0 2.692 1.461 4.437 2.86 5.268c0 0-2.86 1.22-2.86 4.41c0 4.058 2.018 7.034 8.19 7.034c0 0-2.363 2.274-4.349 3.732"/><path d="M27.113 34.48c1.263 1.061 2.626 1.547 5.688 1.547h1.552a4.577 4.577 0 0 0 4.572-4.582h0a4.577 4.577 0 0 0-4.572-4.582H31.25a4.577 4.577 0 0 1-4.573-4.582h0a4.577 4.577 0 0 1 4.573-4.582h1.55c3.062 0 4.426.486 5.689 1.546"/></svg>`;
 
 const np = {
   root: document.getElementById("now-playing"),
@@ -50,7 +51,6 @@ const np = {
   seek: document.getElementById("np-seek"),
   time: document.getElementById("np-time"),
   dur: document.getElementById("np-dur"),
-  spotify: document.getElementById("np-spotify"),
   ytm: document.getElementById("np-ytm"),
   close: document.getElementById("np-close"),
   audio: document.getElementById("np-audio"),
@@ -120,10 +120,6 @@ async function playSongPreview(songName, fallbackCover = "") {
     if (p.artwork) np.art.src = p.artwork;
     else if (fallbackCover) np.art.src = fallbackCover;
 
-    if (np.spotify) {
-      np.spotify.href = p.spotifySearchUrl;
-      np.spotify.classList.remove("hidden");
-    }
     if (np.ytm) {
       np.ytm.href = p.youtubeMusicSearchUrl;
       np.ytm.classList.remove("hidden");
@@ -289,9 +285,11 @@ function renderAlbums() {
                 ? `<img class="song-cover" src="${song.cover}" alt="" loading="lazy" width="36" height="36" ${IMG} />`
                 : ""
             }
-            <span class="song-title">${song.name}${song.year ? ` <em class="song-year">${song.year}</em>` : ""}</span>
-            ${song.bonus ? '<span class="song-bonus-badge">бонус</span>' : ""}
-            ${song.locked ? '<span class="song-locked-badge">Vol. 1</span>' : ""}
+            <span class="song-main">
+              <span class="song-title">${song.name}${song.year ? ` <em class="song-year">${song.year}</em>` : ""}</span>
+              ${song.bonus ? '<span class="song-bonus-badge">бонус</span>' : ""}
+              ${song.locked ? '<span class="song-locked-badge">Vol. 1</span>' : ""}
+            </span>
             <span class="song-links">
               ${
                 song.hasPreview
