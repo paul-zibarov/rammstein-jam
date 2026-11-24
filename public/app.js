@@ -197,11 +197,14 @@ function countByAlbum() {
   return counts;
 }
 
+function requiredAlbums() {
+  return albums.filter((album) => !album.optional);
+}
+
 function isVoteValid() {
   if (!els.name?.value.trim()) return false;
   const counts = countByAlbum();
-  if (counts.size !== albums.length) return false;
-  return albums.every((album) => (counts.get(album.id) || 0) >= MIN_SONGS_PER_ALBUM);
+  return requiredAlbums().every((album) => (counts.get(album.id) || 0) >= MIN_SONGS_PER_ALBUM);
 }
 
 function showToast(message, isError = false) {
@@ -217,24 +220,38 @@ function updateSelectionUI() {
   if (!els.albums) return;
 
   const counts = countByAlbum();
+  const required = requiredAlbums();
   let ready = 0;
 
   els.selectedCount.textContent = selected.size;
-  els.albumsTotal.textContent = albums.length;
+  els.albumsTotal.textContent = required.length;
   els.minPerAlbum.textContent = MIN_SONGS_PER_ALBUM;
-  els.minTotal.textContent = albums.length * MIN_SONGS_PER_ALBUM;
+  els.minTotal.textContent = required.length * MIN_SONGS_PER_ALBUM;
 
   document.querySelectorAll(".album").forEach((article) => {
     const albumId = article.dataset.album;
+    const album = albums.find((a) => a.id === albumId);
     const count = counts.get(albumId) || 0;
+    const badge = article.querySelector(".album-pick-count");
+
+    if (album?.optional) {
+      if (badge) {
+        badge.textContent = count > 0 ? `обрано ${count}` : "необовʼязково";
+        badge.classList.toggle("ok", count > 0);
+        badge.classList.toggle("need", false);
+        badge.classList.toggle("optional", true);
+      }
+      return;
+    }
+
     const ok = count >= MIN_SONGS_PER_ALBUM;
     if (ok) ready += 1;
 
-    const badge = article.querySelector(".album-pick-count");
     if (badge) {
       badge.textContent = `${count} / ${MIN_SONGS_PER_ALBUM}`;
       badge.classList.toggle("ok", ok);
       badge.classList.toggle("need", !ok);
+      badge.classList.toggle("optional", false);
     }
   });
 
@@ -257,14 +274,16 @@ function renderAlbums() {
   els.albums.innerHTML = albums
     .map(
       (album) => `
-    <article class="album${album.kind === "singles" ? " album-singles" : ""}" data-album="${album.id}">
+    <article class="album${album.optional ? " album-singles album-optional" : ""}" data-album="${album.id}">
       <header class="album-header">
         <img class="album-cover" src="${album.cover}" alt="${album.name}" loading="lazy" width="72" height="72" ${IMG} />
         <div class="album-meta">
           <h3>${album.name}</h3>
-          <span>${album.year ?? ""}</span>
+          <span>${album.year ?? ""}${album.optional ? " · необовʼязково" : ""}</span>
         </div>
-        <span class="album-pick-count need">0 / ${MIN_SONGS_PER_ALBUM}</span>
+        <span class="album-pick-count ${album.optional ? "optional" : "need"}">${
+          album.optional ? "необовʼязково" : `0 / ${MIN_SONGS_PER_ALBUM}`
+        }</span>
       </header>
       <div class="song-list">
         ${album.songs
