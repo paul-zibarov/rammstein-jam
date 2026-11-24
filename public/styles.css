@@ -449,8 +449,19 @@ body {
   color: #fff;
 }
 
+.song-yt {
+  color: #ff4e45;
+  padding: 0.05rem;
+}
+
+.song-yt svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 .song-yt:hover {
-  background: rgba(196, 30, 30, 0.2);
+  background: rgba(255, 78, 69, 0.15);
 }
 
 .song-tab:hover {
@@ -464,16 +475,20 @@ body {
 .yt-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
   color: #ff4e45;
   text-decoration: none;
-  font-weight: 600;
-  font-size: 0.88rem;
-  white-space: nowrap;
+  border-radius: 4px;
+  padding: 0.05rem;
+}
+
+.yt-link svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .yt-link:hover {
-  text-decoration: underline;
+  background: rgba(255, 78, 69, 0.15);
 }
 
 .tab-link {
