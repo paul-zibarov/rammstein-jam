@@ -849,127 +849,34 @@ body {
   pointer-events: none;
 }
 
+.song-bonus-badge,
 .song-locked-badge {
   margin-left: auto;
   font-size: 0.68rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--gold);
-  border: 1px solid rgba(212, 168, 83, 0.4);
   border-radius: 999px;
   padding: 0.1rem 0.45rem;
   flex-shrink: 0;
 }
 
-.song-locked .song-yt {
+.song-bonus-badge {
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.song-locked-badge {
+  color: var(--gold);
+  border: 1px solid rgba(212, 168, 83, 0.4);
+}
+
+.song-locked .song-yt,
+.song-bonus .song-yt {
   margin-left: 0.35rem;
 }
 
-.song-trap {
-  border-color: rgba(196, 30, 30, 0.45);
-  background: linear-gradient(135deg, var(--surface-2), rgba(196, 30, 30, 0.08));
-}
-
-.song-trap:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 12px var(--accent-glow);
-}
-
-.song-trap.selected {
-  border-color: var(--accent);
-  background: rgba(196, 30, 30, 0.18);
-}
-
-.explosion-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  overflow: hidden;
-  background: #000;
-}
-
-.explosion-video,
-.explosion-gif {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scale(1.35);
-}
-
-.explosion-gif {
-  display: none;
-}
-
-.explosion-gif:not([hidden]) {
-  display: block;
-}
-
-.explosion-text {
-  position: relative;
-  z-index: 2;
-  font-family: var(--display);
-  font-size: clamp(4rem, 18vw, 9rem);
-  letter-spacing: 0.08em;
-  color: #fff;
-  text-shadow:
-    0 0 20px #ff4500,
-    0 0 40px #c41e1e,
-    0 4px 0 #000;
-  animation: nein-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
-}
-
-.nein-player {
-  position: fixed;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-  z-index: -1;
-  overflow: hidden;
-}
-
-.screen-shake {
-  animation: screen-shake 0.45s ease-in-out;
-}
-
-@keyframes nein-pop {
-  0% {
-    opacity: 0;
-    transform: scale(0.2) rotate(-8deg);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.15) rotate(2deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0);
-  }
-}
-
-@keyframes screen-shake {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  20% {
-    transform: translate(-8px, 4px);
-  }
-  40% {
-    transform: translate(8px, -4px);
-  }
-  60% {
-    transform: translate(-6px, -3px);
-  }
-  80% {
-    transform: translate(6px, 3px);
-  }
+.song-bonus:not(.song-locked) {
+  border: 1px dashed rgba(255, 255, 255, 0.08);
 }
 
 @media (max-width: 768px) {

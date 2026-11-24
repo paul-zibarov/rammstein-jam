@@ -3,14 +3,7 @@ let albums = [];
 let currentPoll = null;
 
 const PAGE = document.body.dataset.page || "vote";
-const MOSKAU_KEY = "rosenrot::Moskau";
-const NEIN_YT_ID = "5lvtswkYFWU";
-const EXPLOSION_DURATION_MS = 2500;
 const IMG = 'referrerpolicy="no-referrer"';
-const neinAudio = new Audio("/sounds/nein.mp3");
-neinAudio.volume = 1;
-
-let neinPlayer = null;
 
 const els = {
   albums: document.getElementById("albums"),
@@ -42,7 +35,6 @@ const els = {
   matchesList: document.getElementById("matches-list"),
   pairwiseList: document.getElementById("pairwise-list"),
   votersList: document.getElementById("voters-list"),
-  explosion: document.getElementById("explosion-overlay"),
 };
 
 const selected = new Set();
@@ -50,72 +42,6 @@ const selected = new Set();
 function pollApi(path) {
   if (!currentPoll?.id) throw new Error("Голосування не завантажено");
   return `/api/polls/${currentPoll.id}${path}`;
-}
-
-function hasMoskau() {
-  return selected.has(MOSKAU_KEY);
-}
-
-function playNein() {
-  if (neinPlayer?.playVideo) {
-    neinPlayer.unMute();
-    neinPlayer.setVolume(100);
-    neinPlayer.seekTo(0, true);
-    neinPlayer.playVideo();
-    return;
-  }
-
-  neinAudio.currentTime = 0;
-  neinAudio.play().catch(() => {
-    const line = new SpeechSynthesisUtterance("Nein!");
-    line.lang = "de-DE";
-    line.rate = 0.85;
-    line.pitch = 0.6;
-    speechSynthesis.speak(line);
-  });
-}
-
-function triggerMoskauDenied() {
-  if (!els.explosion) return;
-
-  document.body.classList.add("screen-shake");
-  els.explosion.classList.remove("hidden");
-  els.explosion.setAttribute("aria-hidden", "false");
-  els.explosion.innerHTML = `
-    <video class="explosion-video" autoplay muted playsinline>
-      <source src="/images/explosion.webm" type="video/webm" />
-    </video>
-    <img class="explosion-gif" src="/images/explosion.gif" alt="" width="200" height="200" hidden />
-    <div class="explosion-text">NEIN!</div>
-  `;
-
-  const video = els.explosion.querySelector(".explosion-video");
-  const gif = els.explosion.querySelector(".explosion-gif");
-
-  if (video) {
-    video.play().catch(() => {
-      video.hidden = true;
-      gif.hidden = false;
-    });
-    video.addEventListener("error", () => {
-      video.hidden = true;
-      gif.hidden = false;
-    });
-  }
-
-  playNein();
-  showToast("NEIN! Moskau не пройде.", true);
-
-  selected.delete(MOSKAU_KEY);
-  updateSelectionUI();
-
-  setTimeout(() => {
-    document.body.classList.remove("screen-shake");
-    els.explosion.classList.add("hidden");
-    els.explosion.setAttribute("aria-hidden", "true");
-    els.explosion.innerHTML = "";
-    if (neinPlayer?.pauseVideo) neinPlayer.pauseVideo();
-  }, EXPLOSION_DURATION_MS);
 }
 
 function countByAlbum() {
@@ -200,12 +126,18 @@ function renderAlbums() {
         ${album.songs
           .map((song) => {
             const classes = ["song-item"];
-            if (song.key === MOSKAU_KEY) classes.push("song-trap");
             if (song.locked) classes.push("song-locked");
+            if (song.bonus) classes.push("song-bonus");
+            const title = song.locked
+              ? ' title="Вже в плейлисті Vol. 1"'
+              : song.bonus
+                ? ' title="Бонус-трек"'
+                : "";
             return `
-          <label class="${classes.join(" ")}" data-key="${song.key}"${song.locked ? ' title="Вже в плейлисті Vol. 1"' : ""}>
+          <label class="${classes.join(" ")}" data-key="${song.key}"${title}>
             <input type="checkbox" value="${song.key}" ${song.locked ? "disabled" : ""} />
             <span class="song-title">${song.name}</span>
+            ${song.bonus ? '<span class="song-bonus-badge">бонус</span>' : ""}
             ${song.locked ? '<span class="song-locked-badge">Vol. 1</span>' : ""}
             <a class="song-yt" href="${song.youtubeUrl}" target="_blank" rel="noopener" title="YouTube" onclick="event.stopPropagation()">▶</a>
           </label>`;
@@ -439,11 +371,6 @@ async function initVotePage() {
   els.form?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    if (hasMoskau()) {
-      triggerMoskauDenied();
-      return;
-    }
-
     const name = els.name.value.trim();
     if (!isVoteValid()) return;
 
@@ -462,21 +389,11 @@ async function initVotePage() {
         body: JSON.stringify({ name, songs }),
       });
       const data = await res.json();
-      if (!res.ok) {
-        if (data.error === "NEIN!") {
-          triggerMoskauDenied();
-          return;
-        }
-        throw new Error(data.error || "Помилка збереження");
-      }
+      if (!res.ok) throw new Error(data.error || "Помилка збереження");
 
       showToast(data.updated ? `Голос оновлено, ${name}!` : `Дякуємо, ${name}!`);
       switchTab("results");
     } catch (err) {
-      if (err.message === "NEIN!") {
-        triggerMoskauDenied();
-        return;
-      }
       showToast(err.message, true);
     } finally {
       els.submitBtn.textContent = "Відправити голос";
@@ -523,26 +440,6 @@ async function initArchivePage() {
   if (initial) await openArchivedPoll(initial);
 }
 
-function initNeinPlayer() {
-  if (!document.getElementById("nein-player") || !window.YT?.Player) return;
-  neinPlayer = new YT.Player("nein-player", {
-    height: "1",
-    width: "1",
-    videoId: NEIN_YT_ID,
-    playerVars: {
-      autoplay: 0,
-      controls: 0,
-      disablekb: 1,
-      fs: 0,
-      modestbranding: 1,
-      rel: 0,
-      playsinline: 1,
-    },
-  });
-}
-
-window.onYouTubeIframeAPIReady = initNeinPlayer;
-
 async function init() {
   if (PAGE === "archive") {
     await initArchivePage();
@@ -550,7 +447,6 @@ async function init() {
   }
 
   await initVotePage();
-  if (window.YT?.Player) initNeinPlayer();
 }
 
 init().catch((err) => {
