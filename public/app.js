@@ -42,6 +42,8 @@ const selected = new Set();
 /** Songsterr mark (Arcticons, CC BY-SA) — guitar headstock + S. */
 const SONGSTERR_ICON = `<svg viewBox="0 0 48 48" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m12.078 15.28l-.485-1.786l-1.705.081l-.813 1.948l.813 2.03h1.705l.485-1.948m1.827-.127l-1.559-.05m.174 17.474l-.485-1.785l-1.705.081l-.813 1.948l.813 2.029h1.705l.485-1.948m1.386-.127l-1.115-.05m.192-8.959l-.485-1.786l-1.705.082l-.813 1.948l.813 2.029h1.705l.485-1.948m1.227-.126l-.956-.05m13.323 18.302c-.63.464-2.778 1.977-5.51-.14l-5.69-5.037s-1.772-1.865-1.399-3.917s.56-20.055-.466-25.465c0 0 5.085-3.31 10.474-3.483c5.374.19 10.433 3.483 10.433 3.483c-.277 1.463-.466 3.846-.536 6.563c-10.755-1.052-11.147 4.746-11.147 7.552c0 2.692 1.461 4.437 2.86 5.268c0 0-2.86 1.22-2.86 4.41c0 4.058 2.018 7.034 8.19 7.034c0 0-2.363 2.274-4.349 3.732"/><path d="M27.113 34.48c1.263 1.061 2.626 1.547 5.688 1.547h1.552a4.577 4.577 0 0 0 4.572-4.582h0a4.577 4.577 0 0 0-4.572-4.582H31.25a4.577 4.577 0 0 1-4.573-4.582h0a4.577 4.577 0 0 1 4.573-4.582h1.55c3.062 0 4.426.486 5.689 1.546"/></svg>`;
 
+const YOUTUBE_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.5 31.5 0 0 0 0 12a31.5 31.5 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.5 31.5 0 0 0 24 12a31.5 31.5 0 0 0-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg>`;
+
 const np = {
   root: document.getElementById("now-playing"),
   art: document.getElementById("np-art"),
@@ -301,7 +303,7 @@ function renderAlbums() {
                   ? `<a class="song-tab" href="${song.songsterrUrl}" target="_blank" rel="noopener" title="Songsterr" aria-label="Songsterr" onclick="event.stopPropagation()">${SONGSTERR_ICON}</a>`
                   : ""
               }
-              <a class="song-yt" href="${song.youtubeUrl}" target="_blank" rel="noopener" title="YouTube" onclick="event.stopPropagation()">YT</a>
+              <a class="song-yt" href="${song.youtubeUrl}" target="_blank" rel="noopener" title="YouTube" aria-label="YouTube" onclick="event.stopPropagation()">${YOUTUBE_ICON}</a>
             </span>
           </label>`;
           })
@@ -341,8 +343,9 @@ function emptyState(text) {
   return `<p class="empty-state">${text}</p>`;
 }
 
-function ytLink(url, label = "YouTube") {
-  return `<a class="yt-link" href="${url}" target="_blank" rel="noopener">${label}</a>`;
+function ytLink(url) {
+  if (!url) return "";
+  return `<a class="yt-link" href="${url}" target="_blank" rel="noopener" title="YouTube" aria-label="YouTube">${YOUTUBE_ICON}</a>`;
 }
 
 function tabLink(url) {
@@ -403,7 +406,7 @@ async function loadResults() {
             <div class="playlist-song-row${track.songs.length > 1 ? " playlist-tie" : ""}">
               <p class="playlist-song">${song.songName}</p>
               <p class="playlist-meta">${votes} голосів${voters}</p>
-              <p class="playlist-links">${playLink(song.songName, track.albumCover)} ${tabLink(song.songsterrUrl)} ${ytLink(song.youtubeUrl, "YouTube")}</p>
+              <p class="playlist-links">${playLink(song.songName, track.albumCover)} ${tabLink(song.songsterrUrl)} ${ytLink(song.youtubeUrl)}</p>
             </div>`;
               })
               .join("")}
@@ -426,7 +429,7 @@ async function loadResults() {
           <td class="song-cell">${row.songName}</td>
           <td>${row.albumName}</td>
           <td class="votes-cell">${row.voteCount}</td>
-          <td class="links-cell">${playLink(row.songName, row.albumCover)} ${tabLink(row.songsterrUrl)} ${ytLink(row.youtubeUrl, "YT")}</td>
+          <td class="links-cell">${playLink(row.songName, row.albumCover)} ${tabLink(row.songsterrUrl)} ${ytLink(row.youtubeUrl)}</td>
         </tr>`
         )
         .join("");
@@ -445,7 +448,7 @@ async function loadResults() {
         <div class="match-item">
           <img class="match-cover" src="${m.albumCover}" alt="" loading="lazy" ${IMG} />
           <div class="match-info">
-            <p class="match-song">${m.songName} ${playLink(m.songName, m.albumCover)} ${tabLink(m.songsterrUrl)} ${ytLink(m.youtubeUrl, "YT")}</p>
+            <p class="match-song">${m.songName} ${playLink(m.songName, m.albumCover)} ${tabLink(m.songsterrUrl)} ${ytLink(m.youtubeUrl)}</p>
             <p class="match-album">${m.albumName}</p>
             <span class="match-badge">${m.voters.length} голосів</span>
             <p class="match-voters">${m.voters.join(", ")}</p>

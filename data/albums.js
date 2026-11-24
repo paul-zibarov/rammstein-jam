@@ -117,6 +117,8 @@ const SONGSTERR_TABS = {
   Radio: { slug: "radio", id: 452782 },
   "Zeig dich": { slug: "zeig-dich", id: 451732 },
   Adieu: { slug: "adieu", id: 516377 },
+  "Mein Land": { slug: "mein-land", id: 82975 },
+  Rammstein: { slug: "rammstein", id: 51449 },
 };
 
 function youtubeUrl(songName, albumId) {
@@ -125,13 +127,9 @@ function youtubeUrl(songName, albumId) {
 }
 
 function songsterrUrl(songName) {
-  if (!SONGSTERR_SONGS.has(String(songName).toLowerCase())) return null;
   const tab = SONGSTERR_TABS[songName];
-  if (tab) {
-    return `https://www.songsterr.com/a/wsa/rammstein-${tab.slug}-tab-s${tab.id}`;
-  }
-  const pattern = encodeURIComponent(`Rammstein ${songName}`);
-  return `https://www.songsterr.com/?pattern=${pattern}`;
+  if (!tab) return null;
+  return `https://www.songsterr.com/a/wsa/rammstein-${tab.slug}-tab-s${tab.id}`;
 }
 
 function youtubeVideoId(youtubeUrlValue) {
