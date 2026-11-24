@@ -7,13 +7,14 @@ const {
   getActivePoll,
   getArchivedPolls,
   resolvePollId,
+  getBlockedSongKeys,
 } = require("./data/polls");
 const { initDb, getDb, validateName, validateSongs } = require("./lib/db");
 const {
   computeLeaderboard,
   computePlaylist,
   computeMatches,
-  playlistSongKeys,
+  playlistFromKeys,
 } = require("./lib/stats");
 
 const PORT = process.env.PORT || 3000;
@@ -37,9 +38,14 @@ function requirePoll(req, res) {
 }
 
 async function getBlockedKeysForPoll(poll) {
-  if (!poll?.blockedFromPollId) return new Set();
-  const rows = await getDb().getVoteRows(poll.blockedFromPollId);
-  return playlistSongKeys(rows);
+  return getBlockedSongKeys(poll);
+}
+
+function playlistForPoll(poll, rows) {
+  if (poll?.officialPlaylistKeys?.length) {
+    return playlistFromKeys(poll.officialPlaylistKeys);
+  }
+  return computePlaylist(rows);
 }
 
 async function albumsPayloadForPoll(poll) {
@@ -109,7 +115,7 @@ app.get("/api/polls/:pollId/playlist", async (req, res, next) => {
     const poll = requirePoll(req, res);
     if (!poll) return;
     const rows = await getDb().getVoteRows(poll.id);
-    res.json({ poll, playlist: computePlaylist(rows) });
+    res.json({ poll, playlist: playlistForPoll(poll, rows) });
   } catch (err) {
     next(err);
   }
@@ -202,7 +208,7 @@ app.get("/api/playlist", async (_req, res, next) => {
   try {
     const poll = getActivePoll();
     const rows = await getDb().getVoteRows(poll.id);
-    res.json({ poll, playlist: computePlaylist(rows) });
+    res.json({ poll, playlist: playlistForPoll(poll, rows) });
   } catch (err) {
     next(err);
   }
