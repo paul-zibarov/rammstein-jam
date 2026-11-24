@@ -375,6 +375,10 @@ function findSong(songKey) {
   return { album, songName };
 }
 
+function isAlbumRequired(album) {
+  return (album?.kind || "album") !== "singles";
+}
+
 function albumsForClient(options = {}) {
   const blockedKeys =
     options.blockedKeys instanceof Set
@@ -387,6 +391,7 @@ function albumsForClient(options = {}) {
     year: album.year,
     cover: album.cover,
     kind: album.kind || "album",
+    optional: !isAlbumRequired(album),
     songs: getSongEntries(album).map((song) => {
       const key = getSongKey(album.id, song.name);
       const yt = song.youtubeUrl || youtubeUrl(song.name, album.id);
@@ -433,6 +438,7 @@ module.exports = {
   getSongEntries,
   getSongNames,
   MIN_SONGS_PER_ALBUM,
+  isAlbumRequired,
   VOTE_SONG_FIXES,
   SONGSTERR_SONGS,
   SONGSTERR_TABS,
