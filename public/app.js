@@ -425,7 +425,7 @@ async function loadResults() {
             <div class="playlist-song-row${track.songs.length > 1 ? " playlist-tie" : ""}">
               <p class="playlist-song">${song.songName}</p>
               <p class="playlist-meta">${votes} голосів${voters}</p>
-              <p class="playlist-links">${playLink(song.songName, track.albumCover)} ${tabLink(song.songsterrUrl)} ${ytLink(song.youtubeUrl)}</p>
+              <div class="playlist-links listen-actions">${playLink(song.songName, track.albumCover)}${tabLink(song.songsterrUrl)}${ytLink(song.youtubeUrl)}</div>
             </div>`;
               })
               .join("")}
@@ -452,7 +452,11 @@ async function loadResults() {
           </td>
           <td>${row.albumName}</td>
           <td class="votes-cell">${row.voteCount}</td>
-          <td class="links-cell">${playLink(row.songName, row.albumCover)}${tabLink(row.songsterrUrl)}${ytLink(row.youtubeUrl)}</td>
+          <td class="links-cell">
+            <div class="listen-actions">
+              ${playLink(row.songName, row.albumCover)}${tabLink(row.songsterrUrl)}${ytLink(row.youtubeUrl)}
+            </div>
+          </td>
         </tr>`
         )
         .join("");
@@ -471,7 +475,10 @@ async function loadResults() {
         <div class="match-item">
           <img class="match-cover" src="${m.albumCover}" alt="" loading="lazy" ${IMG} />
           <div class="match-info">
-            <p class="match-song">${m.songName} ${playLink(m.songName, m.albumCover)} ${tabLink(m.songsterrUrl)} ${ytLink(m.youtubeUrl)}</p>
+            <p class="match-song">
+              <span class="match-song-name">${m.songName}</span>
+              <span class="listen-actions">${playLink(m.songName, m.albumCover)}${tabLink(m.songsterrUrl)}${ytLink(m.youtubeUrl)}</span>
+            </p>
             <p class="match-album">${m.albumName}</p>
             <span class="match-badge">${m.voters.length} голосів</span>
             <p class="match-voters">${m.voters.join(", ")}</p>

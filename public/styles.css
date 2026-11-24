@@ -481,12 +481,15 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   color: #ff4e45;
   text-decoration: none;
+  border: none;
   border-radius: 6px;
   width: 32px;
   height: 32px;
   padding: 0;
+  margin: 0;
   flex-shrink: 0;
 }
 
@@ -504,8 +507,10 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   color: #00b0f6;
   text-decoration: none;
+  border: none;
   border-radius: 6px;
   width: 32px;
   height: 32px;
@@ -528,6 +533,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   color: var(--success);
   text-decoration: none;
   font-weight: 700;
@@ -538,16 +544,24 @@ body {
   height: 32px;
   padding: 0;
   margin: 0;
-  background: transparent;
+  background: rgba(62, 207, 142, 0.08);
   cursor: pointer;
   font: inherit;
   flex-shrink: 0;
   line-height: 1;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .play-link:hover,
 .play-link.is-playing {
-  background: rgba(62, 207, 142, 0.15);
+  background: rgba(62, 207, 142, 0.2);
+}
+
+.yt-link,
+.tab-link,
+.play-link {
+  vertical-align: middle;
 }
 
 .now-playing {
@@ -688,20 +702,23 @@ body.has-now-playing {
   .now-playing-links { grid-area: links; }
 }
 
-.playlist-links,
-.links-cell {
+.playlist-links {
+  margin-top: 0.35rem;
+}
+
+.listen-actions {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   flex-wrap: nowrap;
-  gap: 0.4rem;
-  margin-top: 0.35rem;
+  gap: 0.35rem;
   white-space: nowrap;
+  line-height: 0;
 }
 
 .links-cell {
-  margin-top: 0;
-  width: 1%;
   white-space: nowrap;
+  vertical-align: middle;
 }
 
 .playlist-card {
@@ -784,22 +801,53 @@ body.has-now-playing {
 .leaderboard {
   width: 100%;
   border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
   font-size: 0.92rem;
 }
 
 .leaderboard th {
   text-align: left;
-  padding: 0.6rem 0.5rem;
+  padding: 0.65rem 0.6rem;
   color: var(--muted);
   font-weight: 600;
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.leaderboard th:nth-child(1),
+.leaderboard td:nth-child(1) {
+  width: 3rem;
+  text-align: center;
+}
+
+.leaderboard th:nth-child(2),
+.leaderboard td:nth-child(2) {
+  width: 38%;
+}
+
+.leaderboard th:nth-child(3),
+.leaderboard td:nth-child(3) {
+  width: 28%;
+}
+
+.leaderboard th:nth-child(4),
+.leaderboard td:nth-child(4) {
+  width: 5.5rem;
+  text-align: center;
+}
+
+.leaderboard th:nth-child(5),
+.leaderboard td:nth-child(5) {
+  width: 8.5rem;
+  text-align: left;
 }
 
 .leaderboard td {
-  padding: 0.55rem 0.5rem;
+  padding: 0.55rem 0.6rem;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
@@ -812,8 +860,6 @@ body.has-now-playing {
   font-family: var(--display);
   font-size: 1.1rem;
   color: var(--gold);
-  width: 2rem;
-  text-align: center;
 }
 
 .table-cover {
@@ -830,7 +876,7 @@ body.has-now-playing {
 }
 
 .song-cell-inner {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.75rem;
   min-width: 0;
@@ -838,12 +884,14 @@ body.has-now-playing {
 
 .song-cell-name {
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .votes-cell {
   font-weight: 700;
   color: var(--gold);
-  text-align: center;
 }
 
 .empty-cell {
@@ -857,8 +905,12 @@ body.has-now-playing {
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.55rem;
   flex-wrap: wrap;
+}
+
+.match-song-name {
+  min-width: 0;
 }
 
 .form-actions {
@@ -1209,9 +1261,20 @@ body.has-now-playing {
     gap: 0.5rem;
   }
 
+  .leaderboard {
+    table-layout: auto;
+  }
+
   .leaderboard th:nth-child(3),
   .leaderboard td:nth-child(3) {
     display: none;
+  }
+
+  .leaderboard th:nth-child(2),
+  .leaderboard td:nth-child(2),
+  .leaderboard th:nth-child(5),
+  .leaderboard td:nth-child(5) {
+    width: auto;
   }
 
   .table-cover {
