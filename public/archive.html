@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Попередні голосування — Rammstein Jam</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-page="archive">
+    <div class="bg-glow"></div>
+
+    <header class="header">
+      <div class="header-inner">
+        <p class="brand-kicker">Rammstein Jam</p>
+        <h1>Попередні голосування</h1>
+        <p class="tagline">Архів завершених раундів — плейлисти й результати без змін</p>
+        <nav class="site-nav">
+          <a class="site-nav-link" href="/">← Поточне голосування</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="archive-list-section">
+        <h2 class="section-heading">Архів</h2>
+        <div id="archive-list" class="archive-list"></div>
+      </section>
+
+      <section id="archive-results" class="archive-results hidden">
+        <div class="archive-results-header">
+          <h2 id="archive-poll-title">Результати</h2>
+          <p class="card-desc" id="archive-poll-description"></p>
+        </div>
+
+        <div class="stats-bar">
+          <div class="stat">
+            <span class="stat-value" id="stat-voters">0</span>
+            <span class="stat-label">голосували</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="stat-albums">0</span>
+            <span class="stat-label">альбомів у плейлисті</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="stat-matches">0</span>
+            <span class="stat-label">збігів</span>
+          </div>
+        </div>
+
+        <div class="results-grid">
+          <article class="card card-wide playlist-card">
+            <h2>Фінальний плейлист</h2>
+            <p class="card-desc">По одному треку з кожного альбому — найбільше голосів</p>
+            <div id="playlist" class="playlist"></div>
+          </article>
+
+          <article class="card card-wide">
+            <h2>Таблиця лідерів</h2>
+            <p class="card-desc">Усі пісні за кількістю голосів</p>
+            <div class="table-wrap">
+              <table class="leaderboard" id="leaderboard">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th></th>
+                    <th>Пісня</th>
+                    <th>Альбом</th>
+                    <th>Голоси</th>
+                    <th>YouTube</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboard-body"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="card">
+            <h2>Збіги голосів</h2>
+            <p class="card-desc">Пісні, за які проголосували 2+ людей</p>
+            <div id="matches-list" class="matches-list"></div>
+          </article>
+
+          <article class="card">
+            <h2>Хто з ким збігається</h2>
+            <div id="pairwise-list" class="pairwise-list"></div>
+          </article>
+
+          <article class="card card-wide">
+            <h2>Хто за що голосував</h2>
+            <div id="voters-list" class="voters-list"></div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Rammstein Jam — спільний плейлист для друзів</p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

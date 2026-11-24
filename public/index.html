@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rammstein Jam — голосування</title>
+    <title>Rammstein Tribute Vol. 2 — голосування</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -12,13 +12,19 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body data-page="vote">
     <div class="bg-glow"></div>
 
     <header class="header">
       <div class="header-inner">
-        <h1>Rammstein Jam</h1>
-        <p class="tagline">Голосуйте за треки — зберемо плейлист по одній пісні з кожного альбому</p>
+        <p class="brand-kicker">Rammstein Jam</p>
+        <h1 id="poll-title">Rammstein Tribute Vol. 2</h1>
+        <p class="tagline" id="poll-description">
+          Голосуйте за треки — зберемо плейлист по одній пісні з кожного альбому
+        </p>
+        <nav class="site-nav">
+          <a class="site-nav-link" href="/archive.html">Попередні голосування</a>
+        </nav>
       </div>
     </header>
 
