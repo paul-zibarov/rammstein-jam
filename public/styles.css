@@ -835,6 +835,36 @@ body {
 }
 
 /* Moskau easter egg */
+.song-locked {
+  opacity: 0.48;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.song-locked:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.song-locked input {
+  pointer-events: none;
+}
+
+.song-locked-badge {
+  margin-left: auto;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid rgba(212, 168, 83, 0.4);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  flex-shrink: 0;
+}
+
+.song-locked .song-yt {
+  margin-left: 0.35rem;
+}
+
 .song-trap {
   border-color: rgba(196, 30, 30, 0.45);
   background: linear-gradient(135deg, var(--surface-2), rgba(196, 30, 30, 0.08));
