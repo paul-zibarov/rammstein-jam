@@ -59,38 +59,65 @@ const SONGSTERR_SONGS = new Set(
   ].map((name) => name.toLowerCase())
 );
 
-/** Direct Songsterr song IDs (same ID across guitar/bass/drums). */
-const SONGSTERR_IDS = {
-  "Du hast": 13984,
-  Sonne: 51438,
-  Deutschland: 451140,
-  Mutter: 51437,
-  "Ich will": 16659,
-  "Mein Teil": 16381,
-  Engel: 17128,
-  "Links 2 3 4": 3346828,
-  "Feuer frei!": 13988,
-  Amerika: 17234,
-  Seemann: 379386,
-  "Ohne dich": 17125,
-  "Du riechst so gut": 51452,
-  "Mein Herz brennt": 51447,
-  "Keine Lust": 17225,
-  Sehnsucht: 16428,
+/**
+ * Direct Songsterr tab pages (slug + song id from public Songsterr URLs).
+ * Prefer the main guitar arrangement when several versions exist.
+ */
+const SONGSTERR_TABS = {
+  "Du hast": { slug: "du-hast", id: 13984 },
+  Sonne: { slug: "sonne", id: 51438 },
+  Deutschland: { slug: "deutschland", id: 451140 },
+  Mutter: { slug: "mutter", id: 51437 },
+  "Ich will": { slug: "ich-will", id: 16659 },
+  "Mein Teil": { slug: "mein-teil", id: 16381 },
+  Engel: { slug: "engel", id: 17128 },
+  "Links 2 3 4": { slug: "links-234", id: 16897 },
+  "Feuer frei!": { slug: "feuer-frei", id: 13988 },
+  Amerika: { slug: "amerika", id: 17234 },
+  Seemann: { slug: "seemann", id: 379386 },
+  "Ohne dich": { slug: "ohne-dich", id: 17125 },
+  "Du riechst so gut": { slug: "du-riechst-so-gut", id: 51452 },
+  "Mein Herz brennt": { slug: "mein-herz-brennt", id: 51447 },
+  "Keine Lust": { slug: "keine-lust", id: 17225 },
+  Sehnsucht: { slug: "sehnsucht", id: 16428 },
+  "Asche zu Asche": { slug: "asche-zu-asche", id: 16737 },
+  Ausländer: { slug: "auslander", id: 451765 },
+  "Dicke Titten": { slug: "dicke-titten", id: 507394 },
+  "Waidmanns Heil": { slug: "waidmanns-heil", id: 60741 },
+  "Reise, Reise": { slug: "reise-reise", id: 16434 },
+  "Zick Zack": { slug: "zick-zack", id: 505880 },
+  Rammlied: { slug: "rammlied", id: 59328 },
+  "Bestrafe mich": { slug: "bestrafe-mich", id: 16749 },
+  "Mann gegen Mann": { slug: "mann-gegen-mann", id: 51435 },
+  "Ich tu dir weh": { slug: "ich-tu-dir-weh", id: 59147 },
+  "Rein raus": { slug: "rein-raus", id: 51427 },
+  Tattoo: { slug: "tattoo", id: 451757 },
+  "Heirate mich": { slug: "heirate-mich", id: 51446 },
+  Angst: { slug: "angst", id: 507380 },
+  Spieluhr: { slug: "spieluhr", id: 51439 },
+  Sex: { slug: "sex", id: 451764 },
+  "Wo bist du": { slug: "wo-bist-du", id: 51432 },
+  Zwitter: { slug: "zwitter", id: 16834 },
+  "Spiel mit mir": { slug: "spiel-mit-mir", id: 51454 },
+  Puppe: { slug: "puppe", id: 452527 },
+  Adios: { slug: "adios", id: 16752 },
+  "Was ich liebe": { slug: "was-ich-liebe", id: 451768 },
+  "Te Quiero Puta!": { slug: "te-quiero-puta", id: 51436 },
+  Pussy: { slug: "pussy", id: 31683 },
+  "Bück dich": { slug: "buck-dich", id: 16327 },
+  Rosenrot: { slug: "rosenrot", id: 51429 },
+  "Wollt ihr das Bett in Flammen sehen?": {
+    slug: "wollt-ihr-das-bett-in-flammen-sehen",
+    id: 16699,
+  },
+  Benzin: { slug: "benzinlong", id: 1431356 },
+  Los: { slug: "los", id: 16268 },
+  Amour: { slug: "amour", id: 14006 },
+  Moskau: { slug: "moskau-c-std-bass-line", id: 2315547 },
+  Radio: { slug: "radio", id: 452782 },
+  "Zeig dich": { slug: "zeig-dich", id: 451732 },
+  Adieu: { slug: "adieu", id: 516377 },
 };
-
-function songsterrSlug(songName) {
-  return String(songName)
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/ß/g, "ss")
-    .replace(/ä/g, "a")
-    .replace(/ö/g, "o")
-    .replace(/ü/g, "u")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 function youtubeUrl(songName, albumId) {
   const query = encodeURIComponent(`Rammstein ${songName} official`);
@@ -99,10 +126,9 @@ function youtubeUrl(songName, albumId) {
 
 function songsterrUrl(songName) {
   if (!SONGSTERR_SONGS.has(String(songName).toLowerCase())) return null;
-  const id = SONGSTERR_IDS[songName];
-  if (id) {
-    const slug = songsterrSlug(songName);
-    return `https://www.songsterr.com/a/wsa/rammstein-${slug}-tab-s${id}`;
+  const tab = SONGSTERR_TABS[songName];
+  if (tab) {
+    return `https://www.songsterr.com/a/wsa/rammstein-${tab.slug}-tab-s${tab.id}`;
   }
   const pattern = encodeURIComponent(`Rammstein ${songName}`);
   return `https://www.songsterr.com/?pattern=${pattern}`;
@@ -411,5 +437,5 @@ module.exports = {
   MIN_SONGS_PER_ALBUM,
   VOTE_SONG_FIXES,
   SONGSTERR_SONGS,
-  SONGSTERR_IDS,
+  SONGSTERR_TABS,
 };
