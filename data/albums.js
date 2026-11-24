@@ -129,6 +129,7 @@ const albums = [
       "Mehr",
       "Roter Sand",
       { name: "Führe mich", bonus: true },
+      { name: "Donaukinder", bonus: true },
     ],
   },
   {
