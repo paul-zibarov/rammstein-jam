@@ -480,15 +480,19 @@ body {
 .yt-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   color: #ff4e45;
   text-decoration: none;
-  border-radius: 4px;
-  padding: 0.05rem;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .yt-link svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   display: block;
 }
 
@@ -499,16 +503,20 @@ body {
 .tab-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   color: #00b0f6;
   text-decoration: none;
-  border-radius: 4px;
-  padding: 0.05rem;
-  margin-right: 0.2rem;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .tab-link svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   display: block;
 }
 
@@ -523,14 +531,18 @@ body {
   color: var(--success);
   text-decoration: none;
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   border: 1px solid rgba(62, 207, 142, 0.35);
-  border-radius: 4px;
-  padding: 0.1rem 0.45rem;
-  margin-right: 0.35rem;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin: 0;
   background: transparent;
   cursor: pointer;
   font: inherit;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 .play-link:hover,
@@ -678,15 +690,18 @@ body.has-now-playing {
 
 .playlist-links,
 .links-cell {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 0.25rem;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
   margin-top: 0.35rem;
+  white-space: nowrap;
 }
 
 .links-cell {
   margin-top: 0;
+  width: 1%;
+  white-space: nowrap;
 }
 
 .playlist-card {
@@ -807,10 +822,22 @@ body.has-now-playing {
   border-radius: 6px;
   object-fit: cover;
   display: block;
+  flex-shrink: 0;
 }
 
 .song-cell {
   font-weight: 600;
+}
+
+.song-cell-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.song-cell-name {
+  min-width: 0;
 }
 
 .votes-cell {
@@ -1182,8 +1209,17 @@ body.has-now-playing {
     gap: 0.5rem;
   }
 
-  .leaderboard th:nth-child(2),
-  .leaderboard td:nth-child(2) {
+  .leaderboard th:nth-child(3),
+  .leaderboard td:nth-child(3) {
     display: none;
+  }
+
+  .table-cover {
+    width: 32px;
+    height: 32px;
+  }
+
+  .song-cell-inner {
+    gap: 0.5rem;
   }
 }
