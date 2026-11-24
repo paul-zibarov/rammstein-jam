@@ -146,7 +146,14 @@ function renderAlbums() {
             <span class="song-title">${song.name}${song.year ? ` <em class="song-year">${song.year}</em>` : ""}</span>
             ${song.bonus ? '<span class="song-bonus-badge">бонус</span>' : ""}
             ${song.locked ? '<span class="song-locked-badge">Vol. 1</span>' : ""}
-            <a class="song-yt" href="${song.youtubeUrl}" target="_blank" rel="noopener" title="YouTube" onclick="event.stopPropagation()">▶</a>
+            <span class="song-links">
+              ${
+                song.songsterrUrl
+                  ? `<a class="song-tab" href="${song.songsterrUrl}" target="_blank" rel="noopener" title="Songsterr" onclick="event.stopPropagation()">TAB</a>`
+                  : ""
+              }
+              <a class="song-yt" href="${song.youtubeUrl}" target="_blank" rel="noopener" title="YouTube" onclick="event.stopPropagation()">▶</a>
+            </span>
           </label>`;
           })
           .join("")}
@@ -187,6 +194,11 @@ function emptyState(text) {
 
 function ytLink(url, label = "YouTube") {
   return `<a class="yt-link" href="${url}" target="_blank" rel="noopener">${label}</a>`;
+}
+
+function tabLink(url) {
+  if (!url) return "";
+  return `<a class="tab-link" href="${url}" target="_blank" rel="noopener">TAB</a>`;
 }
 
 async function ensureAlbumsLoaded() {
@@ -237,7 +249,7 @@ async function loadResults() {
             <div class="playlist-song-row${track.songs.length > 1 ? " playlist-tie" : ""}">
               <p class="playlist-song">${song.songName}</p>
               <p class="playlist-meta">${votes} голосів${voters}</p>
-              ${ytLink(song.youtubeUrl, "▶ Слухати")}
+              <p class="playlist-links">${tabLink(song.songsterrUrl)} ${ytLink(song.youtubeUrl, "▶ Слухати")}</p>
             </div>`;
               })
               .join("")}
@@ -260,7 +272,7 @@ async function loadResults() {
           <td class="song-cell">${row.songName}</td>
           <td>${row.albumName}</td>
           <td class="votes-cell">${row.voteCount}</td>
-          <td>${ytLink(row.youtubeUrl, "▶")}</td>
+          <td class="links-cell">${tabLink(row.songsterrUrl)} ${ytLink(row.youtubeUrl, "▶")}</td>
         </tr>`
         )
         .join("");
@@ -279,7 +291,7 @@ async function loadResults() {
         <div class="match-item">
           <img class="match-cover" src="${m.albumCover}" alt="" loading="lazy" ${IMG} />
           <div class="match-info">
-            <p class="match-song">${m.songName} ${ytLink(m.youtubeUrl, "▶")}</p>
+            <p class="match-song">${m.songName} ${tabLink(m.songsterrUrl)} ${ytLink(m.youtubeUrl, "▶")}</p>
             <p class="match-album">${m.albumName}</p>
             <span class="match-badge">${m.voters.length} голосів</span>
             <p class="match-voters">${m.voters.join(", ")}</p>
