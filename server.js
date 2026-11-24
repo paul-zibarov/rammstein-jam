@@ -43,7 +43,7 @@ async function getBlockedKeysForPoll(poll) {
 
 function playlistForPoll(poll, rows) {
   if (poll?.officialPlaylistKeys?.length) {
-    return playlistFromKeys(poll.officialPlaylistKeys);
+    return playlistFromKeys(poll.officialPlaylistKeys, rows);
   }
   return computePlaylist(rows);
 }

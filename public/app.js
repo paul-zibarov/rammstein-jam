@@ -113,12 +113,12 @@ function renderAlbums() {
   els.albums.innerHTML = albums
     .map(
       (album) => `
-    <article class="album" data-album="${album.id}">
+    <article class="album${album.kind === "singles" ? " album-singles" : ""}" data-album="${album.id}">
       <header class="album-header">
         <img class="album-cover" src="${album.cover}" alt="${album.name}" loading="lazy" width="72" height="72" ${IMG} />
         <div class="album-meta">
           <h3>${album.name}</h3>
-          <span>${album.year}</span>
+          <span>${album.year ?? ""}</span>
         </div>
         <span class="album-pick-count need">0 / ${MIN_SONGS_PER_ALBUM}</span>
       </header>
@@ -132,11 +132,18 @@ function renderAlbums() {
               ? ' title="Вже в плейлисті Vol. 1"'
               : song.bonus
                 ? ' title="Бонус-трек"'
-                : "";
+                : song.year
+                  ? ` title="Сингл ${song.year}"`
+                  : "";
             return `
           <label class="${classes.join(" ")}" data-key="${song.key}"${title}>
             <input type="checkbox" value="${song.key}" ${song.locked ? "disabled" : ""} />
-            <span class="song-title">${song.name}</span>
+            ${
+              song.cover
+                ? `<img class="song-cover" src="${song.cover}" alt="" loading="lazy" width="36" height="36" ${IMG} />`
+                : ""
+            }
+            <span class="song-title">${song.name}${song.year ? ` <em class="song-year">${song.year}</em>` : ""}</span>
             ${song.bonus ? '<span class="song-bonus-badge">бонус</span>' : ""}
             ${song.locked ? '<span class="song-locked-badge">Vol. 1</span>' : ""}
             <a class="song-yt" href="${song.youtubeUrl}" target="_blank" rel="noopener" title="YouTube" onclick="event.stopPropagation()">▶</a>
@@ -221,16 +228,18 @@ async function loadResults() {
         <div class="playlist-item">
           <img class="playlist-cover" src="${track.albumCover}" alt="" loading="lazy" ${IMG} />
           <div class="playlist-info">
-            <p class="playlist-album">${track.albumName} <span>${track.albumYear}</span></p>
+            <p class="playlist-album">${track.albumName} <span>${track.albumYear ?? ""}</span></p>
             ${track.songs
-              .map(
-                (song) => `
+              .map((song) => {
+                const votes = song.voteCount ?? song.voters?.length ?? track.voteCount ?? 0;
+                const voters = song.voters?.length ? ` · ${song.voters.join(", ")}` : "";
+                return `
             <div class="playlist-song-row${track.songs.length > 1 ? " playlist-tie" : ""}">
               <p class="playlist-song">${song.songName}</p>
-              <p class="playlist-meta">${track.voteCount} голосів · ${song.voters.join(", ")}</p>
+              <p class="playlist-meta">${votes} голосів${voters}</p>
               ${ytLink(song.youtubeUrl, "▶ Слухати")}
-            </div>`
-              )
+            </div>`;
+              })
               .join("")}
           </div>
         </div>`
