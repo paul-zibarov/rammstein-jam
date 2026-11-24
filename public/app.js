@@ -437,18 +437,22 @@ async function loadResults() {
 
     const rows = leaderboardData.leaderboard;
     if (rows.length === 0) {
-      els.leaderboardBody.innerHTML = `<tr><td colspan="6" class="empty-cell">Ще ніхто не голосував</td></tr>`;
+      els.leaderboardBody.innerHTML = `<tr><td colspan="5" class="empty-cell">Ще ніхто не голосував</td></tr>`;
     } else {
       els.leaderboardBody.innerHTML = rows
         .map(
           (row) => `
         <tr>
           <td class="rank-cell">${row.rank}</td>
-          <td><img class="table-cover" src="${row.albumCover}" alt="" loading="lazy" ${IMG} /></td>
-          <td class="song-cell">${row.songName}</td>
+          <td class="song-cell">
+            <span class="song-cell-inner">
+              <img class="table-cover" src="${row.albumCover}" alt="" loading="lazy" ${IMG} />
+              <span class="song-cell-name">${row.songName}</span>
+            </span>
+          </td>
           <td>${row.albumName}</td>
           <td class="votes-cell">${row.voteCount}</td>
-          <td class="links-cell">${playLink(row.songName, row.albumCover)} ${tabLink(row.songsterrUrl)} ${ytLink(row.youtubeUrl)}</td>
+          <td class="links-cell">${playLink(row.songName, row.albumCover)}${tabLink(row.songsterrUrl)}${ytLink(row.youtubeUrl)}</td>
         </tr>`
         )
         .join("");
