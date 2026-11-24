@@ -39,9 +39,155 @@ const els = {
 
 const selected = new Set();
 
+const SONGSTERR_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="2" y="3" width="20" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6 8.5h8M6 12h12M6 15.5h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="17.5" cy="8.5" r="1.4" fill="currentColor"/></svg>`;
+
+const np = {
+  root: document.getElementById("now-playing"),
+  art: document.getElementById("np-art"),
+  title: document.getElementById("np-title"),
+  sub: document.getElementById("np-sub"),
+  toggle: document.getElementById("np-toggle"),
+  seek: document.getElementById("np-seek"),
+  time: document.getElementById("np-time"),
+  dur: document.getElementById("np-dur"),
+  spotify: document.getElementById("np-spotify"),
+  ytm: document.getElementById("np-ytm"),
+  close: document.getElementById("np-close"),
+  audio: document.getElementById("np-audio"),
+};
+
+let nowPlayingKey = null;
+let seekDragging = false;
+
 function pollApi(path) {
   if (!currentPoll?.id) throw new Error("Голосування не завантажено");
   return `/api/polls/${currentPoll.id}${path}`;
+}
+
+function formatTime(sec) {
+  const s = Math.max(0, Math.floor(sec || 0));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function syncPlayButtons() {
+  document.querySelectorAll("[data-play-song]").forEach((btn) => {
+    const active = btn.dataset.playSong === nowPlayingKey && np.audio && !np.audio.paused;
+    btn.classList.toggle("is-playing", active);
+    btn.textContent = active ? "❚❚" : "▶";
+    btn.setAttribute("aria-label", active ? "Пауза" : "Слухати фрагмент");
+  });
+  if (np.toggle) np.toggle.textContent = np.audio && !np.audio.paused ? "❚❚" : "▶";
+}
+
+function closeNowPlaying() {
+  if (np.audio) {
+    np.audio.pause();
+    np.audio.removeAttribute("src");
+    np.audio.load();
+  }
+  nowPlayingKey = null;
+  np.root?.classList.add("hidden");
+  document.body.classList.remove("has-now-playing");
+  syncPlayButtons();
+}
+
+async function playSongPreview(songName, fallbackCover = "") {
+  if (!np.root || !np.audio) return;
+
+  if (nowPlayingKey === songName && np.audio.src) {
+    if (np.audio.paused) await np.audio.play();
+    else np.audio.pause();
+    syncPlayButtons();
+    return;
+  }
+
+  np.title.textContent = songName;
+  np.sub.textContent = "Завантаження…";
+  np.art.src = fallbackCover || "";
+  np.root.classList.remove("hidden");
+  document.body.classList.add("has-now-playing");
+  nowPlayingKey = songName;
+  syncPlayButtons();
+
+  try {
+    const res = await fetch(`/api/preview?song=${encodeURIComponent(songName)}`);
+    const data = await res.json();
+    if (!res.ok || !data.preview?.previewUrl) throw new Error(data.error || "Немає прев'ю");
+
+    const p = data.preview;
+    np.title.textContent = p.title || songName;
+    np.sub.textContent = `${p.albumTitle || "Фрагмент"} · 30 с`;
+    if (p.artwork) np.art.src = p.artwork;
+    else if (fallbackCover) np.art.src = fallbackCover;
+
+    if (np.spotify) {
+      np.spotify.href = p.spotifySearchUrl;
+      np.spotify.classList.remove("hidden");
+    }
+    if (np.ytm) {
+      np.ytm.href = p.youtubeMusicSearchUrl;
+      np.ytm.classList.remove("hidden");
+    }
+
+    np.audio.src = p.previewUrl;
+    np.audio.currentTime = 0;
+    await np.audio.play();
+    syncPlayButtons();
+  } catch (err) {
+    np.sub.textContent = err.message || "Прев'ю недоступне";
+    syncPlayButtons();
+  }
+}
+
+function initNowPlaying() {
+  if (!np.root || !np.audio) return;
+
+  np.toggle?.addEventListener("click", () => {
+    if (!np.audio.src) return;
+    if (np.audio.paused) np.audio.play();
+    else np.audio.pause();
+  });
+
+  np.close?.addEventListener("click", closeNowPlaying);
+
+  np.seek?.addEventListener("pointerdown", () => {
+    seekDragging = true;
+  });
+  np.seek?.addEventListener("pointerup", () => {
+    seekDragging = false;
+    if (np.audio.src) np.audio.currentTime = Number(np.seek.value);
+  });
+  np.seek?.addEventListener("change", () => {
+    if (np.audio.src) np.audio.currentTime = Number(np.seek.value);
+  });
+
+  np.audio.addEventListener("play", syncPlayButtons);
+  np.audio.addEventListener("pause", syncPlayButtons);
+  np.audio.addEventListener("ended", () => {
+    syncPlayButtons();
+  });
+  np.audio.addEventListener("loadedmetadata", () => {
+    const dur = np.audio.duration || 30;
+    if (np.seek) np.seek.max = String(dur);
+    if (np.dur) np.dur.textContent = formatTime(dur);
+  });
+  np.audio.addEventListener("timeupdate", () => {
+    if (seekDragging) return;
+    if (np.seek) np.seek.value = String(np.audio.currentTime || 0);
+    if (np.time) np.time.textContent = formatTime(np.audio.currentTime);
+  });
+
+  document.addEventListener(
+    "click",
+    (e) => {
+      const btn = e.target.closest("[data-play-song]");
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      playSongPreview(btn.dataset.playSong, btn.dataset.playCover || "");
+    },
+    true
+  );
 }
 
 function countByAlbum() {
@@ -148,11 +294,16 @@ function renderAlbums() {
             ${song.locked ? '<span class="song-locked-badge">Vol. 1</span>' : ""}
             <span class="song-links">
               ${
-                song.songsterrUrl
-                  ? `<a class="song-tab" href="${song.songsterrUrl}" target="_blank" rel="noopener" title="Songsterr" onclick="event.stopPropagation()">TAB</a>`
+                song.hasPreview
+                  ? `<button type="button" class="song-play" data-play-song="${song.name}" data-play-cover="${song.cover || album.cover || ""}" title="Слухати фрагмент">▶</button>`
                   : ""
               }
-              <a class="song-yt" href="${song.youtubeUrl}" target="_blank" rel="noopener" title="YouTube" onclick="event.stopPropagation()">▶</a>
+              ${
+                song.songsterrUrl
+                  ? `<a class="song-tab" href="${song.songsterrUrl}" target="_blank" rel="noopener" title="Songsterr" aria-label="Songsterr" onclick="event.stopPropagation()">${SONGSTERR_ICON}</a>`
+                  : ""
+              }
+              <a class="song-yt" href="${song.youtubeUrl}" target="_blank" rel="noopener" title="YouTube" onclick="event.stopPropagation()">YT</a>
             </span>
           </label>`;
           })
@@ -198,7 +349,12 @@ function ytLink(url, label = "YouTube") {
 
 function tabLink(url) {
   if (!url) return "";
-  return `<a class="tab-link" href="${url}" target="_blank" rel="noopener">TAB</a>`;
+  return `<a class="tab-link" href="${url}" target="_blank" rel="noopener" title="Songsterr" aria-label="Songsterr">${SONGSTERR_ICON}</a>`;
+}
+
+function playLink(songName, cover = "") {
+  if (!songName) return "";
+  return `<button type="button" class="play-link" data-play-song="${songName}" data-play-cover="${cover || ""}" title="Слухати фрагмент">▶</button>`;
 }
 
 async function ensureAlbumsLoaded() {
@@ -249,7 +405,7 @@ async function loadResults() {
             <div class="playlist-song-row${track.songs.length > 1 ? " playlist-tie" : ""}">
               <p class="playlist-song">${song.songName}</p>
               <p class="playlist-meta">${votes} голосів${voters}</p>
-              <p class="playlist-links">${tabLink(song.songsterrUrl)} ${ytLink(song.youtubeUrl, "▶ Слухати")}</p>
+              <p class="playlist-links">${playLink(song.songName, track.albumCover)} ${tabLink(song.songsterrUrl)} ${ytLink(song.youtubeUrl, "YouTube")}</p>
             </div>`;
               })
               .join("")}
@@ -272,7 +428,7 @@ async function loadResults() {
           <td class="song-cell">${row.songName}</td>
           <td>${row.albumName}</td>
           <td class="votes-cell">${row.voteCount}</td>
-          <td class="links-cell">${tabLink(row.songsterrUrl)} ${ytLink(row.youtubeUrl, "▶")}</td>
+          <td class="links-cell">${playLink(row.songName, row.albumCover)} ${tabLink(row.songsterrUrl)} ${ytLink(row.youtubeUrl, "YT")}</td>
         </tr>`
         )
         .join("");
@@ -291,7 +447,7 @@ async function loadResults() {
         <div class="match-item">
           <img class="match-cover" src="${m.albumCover}" alt="" loading="lazy" ${IMG} />
           <div class="match-info">
-            <p class="match-song">${m.songName} ${tabLink(m.songsterrUrl)} ${ytLink(m.youtubeUrl, "▶")}</p>
+            <p class="match-song">${m.songName} ${playLink(m.songName, m.albumCover)} ${tabLink(m.songsterrUrl)} ${ytLink(m.youtubeUrl, "YT")}</p>
             <p class="match-album">${m.albumName}</p>
             <span class="match-badge">${m.voters.length} голосів</span>
             <p class="match-voters">${m.voters.join(", ")}</p>
@@ -462,6 +618,8 @@ async function initArchivePage() {
 }
 
 async function init() {
+  initNowPlaying();
+
   if (PAGE === "archive") {
     await initArchivePage();
     return;

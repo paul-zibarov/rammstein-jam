@@ -1,4 +1,5 @@
 const MIN_SONGS_PER_ALBUM = 3;
+const { DEEZER_TRACK_IDS } = require("./deezerTracks");
 
 /** Songs confirmed available on Songsterr (Rammstein search results). */
 const SONGSTERR_SONGS = new Set(
@@ -58,6 +59,39 @@ const SONGSTERR_SONGS = new Set(
   ].map((name) => name.toLowerCase())
 );
 
+/** Direct Songsterr song IDs (same ID across guitar/bass/drums). */
+const SONGSTERR_IDS = {
+  "Du hast": 13984,
+  Sonne: 51438,
+  Deutschland: 451140,
+  Mutter: 51437,
+  "Ich will": 16659,
+  "Mein Teil": 16381,
+  Engel: 17128,
+  "Links 2 3 4": 3346828,
+  "Feuer frei!": 13988,
+  Amerika: 17234,
+  Seemann: 379386,
+  "Ohne dich": 17125,
+  "Du riechst so gut": 51452,
+  "Mein Herz brennt": 51447,
+  "Keine Lust": 17225,
+  Sehnsucht: 16428,
+};
+
+function songsterrSlug(songName) {
+  return String(songName)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ß/g, "ss")
+    .replace(/ä/g, "a")
+    .replace(/ö/g, "o")
+    .replace(/ü/g, "u")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function youtubeUrl(songName, albumId) {
   const query = encodeURIComponent(`Rammstein ${songName} official`);
   return `https://www.youtube.com/results?search_query=${query}`;
@@ -65,8 +99,26 @@ function youtubeUrl(songName, albumId) {
 
 function songsterrUrl(songName) {
   if (!SONGSTERR_SONGS.has(String(songName).toLowerCase())) return null;
+  const id = SONGSTERR_IDS[songName];
+  if (id) {
+    const slug = songsterrSlug(songName);
+    return `https://www.songsterr.com/a/wsa/rammstein-${slug}-tab-s${id}`;
+  }
   const pattern = encodeURIComponent(`Rammstein ${songName}`);
   return `https://www.songsterr.com/?pattern=${pattern}`;
+}
+
+function youtubeVideoId(youtubeUrlValue) {
+  if (!youtubeUrlValue) return null;
+  try {
+    const url = new URL(youtubeUrlValue);
+    if (url.hostname.includes("youtu.be")) {
+      return url.pathname.replace(/^\//, "") || null;
+    }
+    return url.searchParams.get("v");
+  } catch {
+    return null;
+  }
 }
 
 function normalizeSong(entry) {
@@ -313,14 +365,17 @@ function albumsForClient(options = {}) {
     kind: album.kind || "album",
     songs: getSongEntries(album).map((song) => {
       const key = getSongKey(album.id, song.name);
+      const yt = song.youtubeUrl || youtubeUrl(song.name, album.id);
       return {
         name: song.name,
         key,
         bonus: song.bonus,
         cover: song.cover,
         year: song.year,
-        youtubeUrl: song.youtubeUrl || youtubeUrl(song.name, album.id),
+        youtubeUrl: yt,
+        youtubeVideoId: youtubeVideoId(yt),
         songsterrUrl: songsterrUrl(song.name),
+        hasPreview: Boolean(DEEZER_TRACK_IDS[song.name]),
         locked: blockedKeys.has(key),
       };
     }),
@@ -349,10 +404,12 @@ module.exports = {
   findSong,
   youtubeUrl,
   songsterrUrl,
+  youtubeVideoId,
   albumsForClient,
   getSongEntries,
   getSongNames,
   MIN_SONGS_PER_ALBUM,
   VOTE_SONG_FIXES,
   SONGSTERR_SONGS,
+  SONGSTERR_IDS,
 };

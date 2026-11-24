@@ -75,7 +75,7 @@
                     <th>Пісня</th>
                     <th>Альбом</th>
                     <th>Голоси</th>
-                    <th>YouTube</th>
+                    <th>Слухати</th>
                   </tr>
                 </thead>
                 <tbody id="leaderboard-body"></tbody>
@@ -105,6 +105,28 @@
     <footer class="footer">
       <p>Rammstein Jam — спільний плейлист для друзів</p>
     </footer>
+
+    <div id="now-playing" class="now-playing hidden" aria-live="polite">
+      <div class="now-playing-inner">
+        <img id="np-art" class="now-playing-art" alt="" width="56" height="56" referrerpolicy="no-referrer" />
+        <div class="now-playing-meta">
+          <p id="np-title" class="now-playing-title"></p>
+          <p id="np-sub" class="now-playing-sub">Фрагмент · 30 с</p>
+        </div>
+        <button type="button" id="np-toggle" class="now-playing-toggle" aria-label="Play/Pause">▶</button>
+        <div class="now-playing-progress">
+          <span id="np-time">0:00</span>
+          <input id="np-seek" type="range" min="0" max="30" value="0" step="0.1" aria-label="Прогрес" />
+          <span id="np-dur">0:30</span>
+        </div>
+        <div class="now-playing-links">
+          <a id="np-spotify" class="now-playing-ext spotify" href="#" target="_blank" rel="noopener">Spotify</a>
+          <a id="np-ytm" class="now-playing-ext ytm" href="#" target="_blank" rel="noopener">YouTube Music</a>
+        </div>
+        <button type="button" id="np-close" class="now-playing-close" aria-label="Закрити">×</button>
+      </div>
+      <audio id="np-audio" preload="none"></audio>
+    </div>
 
     <script src="app.js"></script>
   </body>
