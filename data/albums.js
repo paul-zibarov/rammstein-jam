@@ -1,19 +1,84 @@
 const MIN_SONGS_PER_ALBUM = 3;
 
+/** Songs confirmed available on Songsterr (Rammstein search results). */
+const SONGSTERR_SONGS = new Set(
+  [
+    "Sonne",
+    "Du hast",
+    "Deutschland",
+    "Engel",
+    "Links 2 3 4",
+    "Ich will",
+    "Feuer frei!",
+    "Mutter",
+    "Radio",
+    "Mein Herz brennt",
+    "Rammstein",
+    "Rein raus",
+    "Ich tu dir weh",
+    "Du riechst so gut",
+    "Amerika",
+    "Mein Teil",
+    "Rosenrot",
+    "Keine Lust",
+    "Mann gegen Mann",
+    "Asche zu Asche",
+    "Ausländer",
+    "Dicke Titten",
+    "Waidmanns Heil",
+    "Bück dich",
+    "Pussy",
+    "Ohne dich",
+    "Sehnsucht",
+    "Tattoo",
+    "Seemann",
+    "Wollt ihr das Bett in Flammen sehen?",
+    "Reise, Reise",
+    "Zick Zack",
+    "Rammlied",
+    "Bestrafe mich",
+    "Los",
+    "Was ich liebe",
+    "Te Quiero Puta!",
+    "Benzin",
+    "Mein Land",
+    "Zwitter",
+    "Angst",
+    "Puppe",
+    "Spiel mit mir",
+    "Zeig dich",
+    "Adieu",
+    "Adios",
+    "Spieluhr",
+    "Sex",
+    "Heirate mich",
+    "Moskau",
+    "Amour",
+    "Wo bist du",
+  ].map((name) => name.toLowerCase())
+);
+
 function youtubeUrl(songName, albumId) {
   const query = encodeURIComponent(`Rammstein ${songName} official`);
   return `https://www.youtube.com/results?search_query=${query}`;
 }
 
+function songsterrUrl(songName) {
+  if (!SONGSTERR_SONGS.has(String(songName).toLowerCase())) return null;
+  const pattern = encodeURIComponent(`Rammstein ${songName}`);
+  return `https://www.songsterr.com/?pattern=${pattern}`;
+}
+
 function normalizeSong(entry) {
   if (typeof entry === "string") {
-    return { name: entry, bonus: false, cover: null, year: null };
+    return { name: entry, bonus: false, cover: null, year: null, youtubeUrl: null };
   }
   return {
     name: String(entry.name),
     bonus: Boolean(entry.bonus),
     cover: entry.cover || null,
     year: entry.year ?? null,
+    youtubeUrl: entry.youtubeUrl || null,
   };
 }
 
@@ -186,6 +251,13 @@ const albums = [
           "https://cdn.rammsteinworld.com/thumb/500/uploads/discographie/singles/das-modell/das-modell.jpg",
       },
       {
+        name: "Kokain",
+        year: 1997,
+        cover:
+          "https://cdn.rammsteinworld.com/thumb/500/uploads/discographie/singles/das-modell/das-modell.jpg",
+        youtubeUrl: "https://www.youtube.com/watch?v=R17W_TeMejg",
+      },
+      {
         name: "Stripped",
         year: 1998,
         cover:
@@ -247,7 +319,8 @@ function albumsForClient(options = {}) {
         bonus: song.bonus,
         cover: song.cover,
         year: song.year,
-        youtubeUrl: youtubeUrl(song.name, album.id),
+        youtubeUrl: song.youtubeUrl || youtubeUrl(song.name, album.id),
+        songsterrUrl: songsterrUrl(song.name),
         locked: blockedKeys.has(key),
       };
     }),
@@ -275,9 +348,11 @@ module.exports = {
   getSongKey,
   findSong,
   youtubeUrl,
+  songsterrUrl,
   albumsForClient,
   getSongEntries,
   getSongNames,
   MIN_SONGS_PER_ALBUM,
   VOTE_SONG_FIXES,
+  SONGSTERR_SONGS,
 };
