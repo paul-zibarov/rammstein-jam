@@ -16,6 +16,7 @@ const {
   computeMatches,
   playlistFromKeys,
 } = require("./lib/stats");
+const { getPreviewForSong } = require("./lib/preview");
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -60,6 +61,18 @@ async function albumsPayloadForPoll(poll) {
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.get("/api/preview", async (req, res, next) => {
+  try {
+    const song = String(req.query.song || "").trim();
+    if (!song) return res.status(400).json({ error: "Вкажіть song" });
+    const preview = await getPreviewForSong(song);
+    if (!preview) return res.status(404).json({ error: "Прев'ю не знайдено" });
+    res.json({ preview });
+  } catch (err) {
+    next(err);
+  }
 });
 
 app.get("/api/polls", (_req, res) => {
