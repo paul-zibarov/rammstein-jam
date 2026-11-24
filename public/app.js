@@ -1,6 +1,8 @@
 let MIN_SONGS_PER_ALBUM = 3;
 let albums = [];
+let currentPoll = null;
 
+const PAGE = document.body.dataset.page || "vote";
 const MOSKAU_KEY = "rosenrot::Moskau";
 const NEIN_YT_ID = "5lvtswkYFWU";
 const EXPLOSION_DURATION_MS = 2500;
@@ -26,6 +28,12 @@ const els = {
     vote: document.getElementById("panel-vote"),
     results: document.getElementById("panel-results"),
   },
+  pollTitle: document.getElementById("poll-title"),
+  pollDescription: document.getElementById("poll-description"),
+  archiveList: document.getElementById("archive-list"),
+  archiveResults: document.getElementById("archive-results"),
+  archivePollTitle: document.getElementById("archive-poll-title"),
+  archivePollDescription: document.getElementById("archive-poll-description"),
   statVoters: document.getElementById("stat-voters"),
   statAlbums: document.getElementById("stat-albums"),
   statMatches: document.getElementById("stat-matches"),
@@ -38,6 +46,11 @@ const els = {
 };
 
 const selected = new Set();
+
+function pollApi(path) {
+  if (!currentPoll?.id) throw new Error("Голосування не завантажено");
+  return `/api/polls/${currentPoll.id}${path}`;
+}
 
 function hasMoskau() {
   return selected.has(MOSKAU_KEY);
@@ -63,6 +76,8 @@ function playNein() {
 }
 
 function triggerMoskauDenied() {
+  if (!els.explosion) return;
+
   document.body.classList.add("screen-shake");
   els.explosion.classList.remove("hidden");
   els.explosion.setAttribute("aria-hidden", "false");
@@ -113,13 +128,14 @@ function countByAlbum() {
 }
 
 function isVoteValid() {
-  if (!els.name.value.trim()) return false;
+  if (!els.name?.value.trim()) return false;
   const counts = countByAlbum();
   if (counts.size !== albums.length) return false;
   return albums.every((album) => (counts.get(album.id) || 0) >= MIN_SONGS_PER_ALBUM);
 }
 
 function showToast(message, isError = false) {
+  if (!els.toast) return;
   els.toast.textContent = message;
   els.toast.classList.toggle("error", isError);
   els.toast.classList.remove("hidden");
@@ -128,6 +144,8 @@ function showToast(message, isError = false) {
 }
 
 function updateSelectionUI() {
+  if (!els.albums) return;
+
   const counts = countByAlbum();
   let ready = 0;
 
@@ -164,6 +182,8 @@ function updateSelectionUI() {
 }
 
 function renderAlbums() {
+  if (!els.albums) return;
+
   els.albums.innerHTML = albums
     .map(
       (album) => `
@@ -209,6 +229,7 @@ function switchTab(tabId) {
   });
 
   Object.entries(els.panels).forEach(([id, panel]) => {
+    if (!panel) return;
     const active = id === tabId;
     panel.classList.toggle("active", active);
     panel.hidden = !active;
@@ -216,60 +237,6 @@ function switchTab(tabId) {
 
   if (tabId === "results") loadResults();
 }
-
-els.tabs.forEach((tab) => {
-  tab.addEventListener("click", () => switchTab(tab.dataset.tab));
-});
-
-els.name.addEventListener("input", updateSelectionUI);
-
-els.form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  if (hasMoskau()) {
-    triggerMoskauDenied();
-    return;
-  }
-
-  const name = els.name.value.trim();
-  if (!isVoteValid()) return;
-
-  const songs = [...selected].map((key) => {
-    const [albumId, ...rest] = key.split("::");
-    return { albumId, songName: rest.join("::") };
-  });
-
-  els.submitBtn.disabled = true;
-  els.submitBtn.textContent = "Зберігаємо…";
-
-  try {
-    const res = await fetch("/api/votes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, songs }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      if (data.error === "NEIN!") {
-        triggerMoskauDenied();
-        return;
-      }
-      throw new Error(data.error || "Помилка збереження");
-    }
-
-    showToast(data.updated ? `Голос оновлено, ${name}!` : `Дякуємо, ${name}!`);
-    switchTab("results");
-  } catch (err) {
-    if (err.message === "NEIN!") {
-      triggerMoskauDenied();
-      return;
-    }
-    showToast(err.message, true);
-  } finally {
-    els.submitBtn.textContent = "Відправити голос";
-    updateSelectionUI();
-  }
-});
 
 function emptyState(text) {
   return `<p class="empty-state">${text}</p>`;
@@ -279,13 +246,25 @@ function ytLink(url, label = "YouTube") {
   return `<a class="yt-link" href="${url}" target="_blank" rel="noopener">${label}</a>`;
 }
 
+async function ensureAlbumsLoaded() {
+  if (albums.length) return;
+  const res = await fetch(pollApi("/albums"));
+  const data = await res.json();
+  albums = data.albums;
+  MIN_SONGS_PER_ALBUM = data.minSongsPerAlbum || 3;
+}
+
 async function loadResults() {
+  if (!els.playlist) return;
+
   try {
+    await ensureAlbumsLoaded();
+
     const [playlistRes, leaderboardRes, matchesRes, votesRes] = await Promise.all([
-      fetch("/api/playlist"),
-      fetch("/api/leaderboard"),
-      fetch("/api/matches"),
-      fetch("/api/votes"),
+      fetch(pollApi("/playlist")),
+      fetch(pollApi("/leaderboard")),
+      fetch(pollApi("/matches")),
+      fetch(pollApi("/votes")),
     ]);
 
     const playlistData = await playlistRes.json();
@@ -406,16 +385,142 @@ async function loadResults() {
   }
 }
 
-async function init() {
-  const res = await fetch("/api/albums");
+function applyPollMeta(poll) {
+  currentPoll = poll;
+  if (els.pollTitle) els.pollTitle.textContent = poll.title;
+  if (els.pollDescription) els.pollDescription.textContent = poll.description;
+  document.title = `${poll.title} — голосування`;
+}
+
+function setActiveArchiveCard(pollId) {
+  document.querySelectorAll(".archive-card").forEach((card) => {
+    card.classList.toggle("active", card.dataset.pollId === pollId);
+  });
+}
+
+async function openArchivedPoll(poll) {
+  currentPoll = poll;
+  albums = [];
+
+  if (els.archivePollTitle) els.archivePollTitle.textContent = poll.title;
+  if (els.archivePollDescription) els.archivePollDescription.textContent = poll.description;
+  if (els.archiveResults) els.archiveResults.classList.remove("hidden");
+
+  setActiveArchiveCard(poll.id);
+  const url = new URL(window.location.href);
+  url.searchParams.set("poll", poll.id);
+  history.replaceState({}, "", url);
+
+  await loadResults();
+  els.archiveResults?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function initVotePage() {
+  const res = await fetch("/api/polls");
   const data = await res.json();
-  albums = data.albums;
-  MIN_SONGS_PER_ALBUM = data.minSongsPerAlbum || 3;
+  const active = data.polls.find((p) => p.id === data.activePollId) || data.polls.find((p) => p.status === "active");
+  if (!active) throw new Error("Немає активного голосування");
+
+  applyPollMeta(active);
+  await ensureAlbumsLoaded();
   renderAlbums();
   updateSelectionUI();
+
+  els.tabs.forEach((tab) => {
+    tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+  });
+
+  els.name?.addEventListener("input", updateSelectionUI);
+
+  els.form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (hasMoskau()) {
+      triggerMoskauDenied();
+      return;
+    }
+
+    const name = els.name.value.trim();
+    if (!isVoteValid()) return;
+
+    const songs = [...selected].map((key) => {
+      const [albumId, ...rest] = key.split("::");
+      return { albumId, songName: rest.join("::") };
+    });
+
+    els.submitBtn.disabled = true;
+    els.submitBtn.textContent = "Зберігаємо…";
+
+    try {
+      const res = await fetch(pollApi("/votes"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, songs }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.error === "NEIN!") {
+          triggerMoskauDenied();
+          return;
+        }
+        throw new Error(data.error || "Помилка збереження");
+      }
+
+      showToast(data.updated ? `Голос оновлено, ${name}!` : `Дякуємо, ${name}!`);
+      switchTab("results");
+    } catch (err) {
+      if (err.message === "NEIN!") {
+        triggerMoskauDenied();
+        return;
+      }
+      showToast(err.message, true);
+    } finally {
+      els.submitBtn.textContent = "Відправити голос";
+      updateSelectionUI();
+    }
+  });
+}
+
+async function initArchivePage() {
+  const res = await fetch("/api/polls");
+  const data = await res.json();
+  const archived = data.archived?.length
+    ? data.archived
+    : data.polls.filter((p) => p.status === "archived");
+
+  if (!els.archiveList) return;
+
+  if (archived.length === 0) {
+    els.archiveList.innerHTML = emptyState("Поки немає завершених голосувань");
+    return;
+  }
+
+  els.archiveList.innerHTML = archived
+    .map(
+      (poll) => `
+    <button type="button" class="archive-card" data-poll-id="${poll.id}">
+      <span class="archive-card-badge">Архів</span>
+      <span class="archive-card-title">${poll.title}</span>
+      <span class="archive-card-desc">${poll.description}</span>
+      <span class="archive-card-action">Переглянути результати →</span>
+    </button>`
+    )
+    .join("");
+
+  els.archiveList.addEventListener("click", (e) => {
+    const card = e.target.closest(".archive-card");
+    if (!card) return;
+    const poll = archived.find((p) => p.id === card.dataset.pollId);
+    if (poll) openArchivedPoll(poll);
+  });
+
+  const selectedId = new URLSearchParams(window.location.search).get("poll");
+  const initial = archived.find((p) => p.id === selectedId) || archived[0];
+  if (initial) await openArchivedPoll(initial);
 }
 
 function initNeinPlayer() {
+  if (!document.getElementById("nein-player") || !window.YT?.Player) return;
   neinPlayer = new YT.Player("nein-player", {
     height: "1",
     width: "1",
@@ -433,6 +538,23 @@ function initNeinPlayer() {
 }
 
 window.onYouTubeIframeAPIReady = initNeinPlayer;
-if (window.YT?.Player) initNeinPlayer();
 
-init();
+async function init() {
+  if (PAGE === "archive") {
+    await initArchivePage();
+    return;
+  }
+
+  await initVotePage();
+  if (window.YT?.Player) initNeinPlayer();
+}
+
+init().catch((err) => {
+  console.error(err);
+  if (els.albums) {
+    els.albums.innerHTML = emptyState("Не вдалося завантажити голосування");
+  }
+  if (els.archiveList) {
+    els.archiveList.innerHTML = emptyState("Не вдалося завантажити архів");
+  }
+});

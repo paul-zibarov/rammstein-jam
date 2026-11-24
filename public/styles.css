@@ -52,6 +52,14 @@ body {
   background: linear-gradient(180deg, rgba(20, 20, 24, 0.9), transparent);
 }
 
+.brand-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
 .header h1 {
   margin: 0;
   font-family: var(--display);
@@ -65,6 +73,104 @@ body {
   margin: 0.5rem 0 0;
   color: var(--muted);
   font-size: 1rem;
+}
+
+.site-nav {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.site-nav-link {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-bottom: 1px solid rgba(212, 168, 83, 0.45);
+  padding-bottom: 0.1rem;
+}
+
+.site-nav-link:hover {
+  color: var(--gold);
+}
+
+.section-heading {
+  margin: 0 0 1rem;
+  font-family: var(--display);
+  font-size: 1.8rem;
+  letter-spacing: 0.04em;
+}
+
+.archive-list {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 2rem;
+}
+
+.archive-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  width: 100%;
+  text-align: left;
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+
+.archive-card:hover {
+  border-color: rgba(212, 168, 83, 0.45);
+  background: var(--surface-2);
+  transform: translateY(-1px);
+}
+
+.archive-card.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(212, 168, 83, 0.25);
+}
+
+.archive-card-badge {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.archive-card-title {
+  font-family: var(--display);
+  font-size: 1.6rem;
+  letter-spacing: 0.04em;
+}
+
+.archive-card-desc {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.archive-card-action {
+  margin-top: 0.35rem;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.archive-results-header {
+  margin-bottom: 1.25rem;
+}
+
+.archive-results-header h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 2rem;
+  letter-spacing: 0.04em;
 }
 
 .container {
