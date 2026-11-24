@@ -1,10 +1,18 @@
 const MIN_SONGS_PER_ALBUM = 3;
-const MOSKAU_KEY = "rosenrot::Moskau";
-const FORBIDDEN_SONGS = new Set([MOSKAU_KEY]);
 
 function youtubeUrl(songName, albumId) {
   const query = encodeURIComponent(`Rammstein ${songName} official`);
   return `https://www.youtube.com/results?search_query=${query}`;
+}
+
+function normalizeSong(entry) {
+  if (typeof entry === "string") {
+    return { name: entry, bonus: false };
+  }
+  return {
+    name: String(entry.name),
+    bonus: Boolean(entry.bonus),
+  };
 }
 
 const albums = [
@@ -39,7 +47,7 @@ const albums = [
       "Bestrafe mich",
       "Du hast",
       "Bück dich",
-      "Spieluhr",
+      "Spiel mit mir",
       "Klavier",
       "Alter Mann",
       "Eifersucht",
@@ -58,7 +66,7 @@ const albums = [
       "Ich will",
       "Feuer frei!",
       "Mutter",
-      "Spiel mit mir",
+      "Spieluhr",
       "Zwitter",
       "Rein raus",
       "Adios",
@@ -76,11 +84,12 @@ const albums = [
       "Dalai Lama",
       "Keine Lust",
       "Los",
+      "Amerika",
+      "Moskau",
       "Morgenstern",
       "Stein um Stein",
       "Ohne dich",
       "Amour",
-      "Amerika",
     ],
   },
   {
@@ -94,13 +103,12 @@ const albums = [
       "Rosenrot",
       "Spring",
       "Wo bist du",
-      "Stirb mir nicht weg",
+      "Stirb nicht vor mir",
       "Zerstören",
       "Hilf mir",
       "Te Quiero Puta!",
       "Feuer und Wasser",
       "Ein Lied",
-      "Moskau",
     ],
   },
   {
@@ -113,14 +121,14 @@ const albums = [
       "Ich tu dir weh",
       "Waidmanns Heil",
       "Haifisch",
-      "Bückstück",
+      "Bückstabü",
       "Frühling in Paris",
       "Wiener Blut",
       "Pussy",
       "Liebe ist für alle da",
       "Mehr",
       "Roter Sand",
-      "Führe mich",
+      { name: "Führe mich", bonus: true },
     ],
   },
   {
@@ -151,17 +159,25 @@ const albums = [
       "Armee der Tristen",
       "Zeit",
       "Schwarz",
-      "Gift",
-      "OK",
-      "Meine Welt brennt",
-      "Angst",
-      "Dämmerung",
-      "Adieu",
+      "Giftig",
       "Zick Zack",
+      "OK",
+      "Meine Tränen",
+      "Angst",
       "Dicke Titten",
+      "Lügen",
+      "Adieu",
     ],
   },
 ];
+
+function getSongEntries(album) {
+  return album.songs.map(normalizeSong);
+}
+
+function getSongNames(album) {
+  return getSongEntries(album).map((song) => song.name);
+}
 
 function getSongKey(albumId, songName) {
   return `${albumId}::${songName}`;
@@ -171,26 +187,49 @@ function findSong(songKey) {
   const [albumId, ...rest] = songKey.split("::");
   const songName = rest.join("::");
   const album = albums.find((a) => a.id === albumId);
-  if (!album || !album.songs.includes(songName)) return null;
+  if (!album || !getSongNames(album).includes(songName)) return null;
   return { album, songName };
 }
 
 function albumsForClient(options = {}) {
-  const blockedKeys = options.blockedKeys instanceof Set ? options.blockedKeys : new Set(options.blockedKeys || []);
+  const blockedKeys =
+    options.blockedKeys instanceof Set
+      ? options.blockedKeys
+      : new Set(options.blockedKeys || []);
 
   return albums.map((album) => ({
-    ...album,
-    songs: album.songs.map((songName) => {
-      const key = getSongKey(album.id, songName);
+    id: album.id,
+    name: album.name,
+    year: album.year,
+    cover: album.cover,
+    songs: getSongEntries(album).map((song) => {
+      const key = getSongKey(album.id, song.name);
       return {
-        name: songName,
+        name: song.name,
         key,
-        youtubeUrl: youtubeUrl(songName, album.id),
+        bonus: song.bonus,
+        youtubeUrl: youtubeUrl(song.name, album.id),
         locked: blockedKeys.has(key),
       };
     }),
   }));
 }
+
+/** One-time vote remaps/deletes after tracklist corrections */
+const VOTE_SONG_FIXES = {
+  deleteKeys: [
+    "zeit::Meine Welt brennt",
+    "zeit::Dämmerung",
+  ],
+  remaps: [
+    { from: "sehnsucht::Spieluhr", to: "mutter::Spieluhr" },
+    { from: "mutter::Spiel mit mir", to: "sehnsucht::Spiel mit mir" },
+    { from: "liebe::Bückstück", to: "liebe::Bückstabü" },
+    { from: "rosenrot::Stirb mir nicht weg", to: "rosenrot::Stirb nicht vor mir" },
+    { from: "rosenrot::Moskau", to: "reise-reise::Moskau" },
+    { from: "zeit::Gift", to: "zeit::Giftig" },
+  ],
+};
 
 module.exports = {
   albums,
@@ -198,7 +237,8 @@ module.exports = {
   findSong,
   youtubeUrl,
   albumsForClient,
+  getSongEntries,
+  getSongNames,
   MIN_SONGS_PER_ALBUM,
-  MOSKAU_KEY,
-  FORBIDDEN_SONGS,
+  VOTE_SONG_FIXES,
 };
